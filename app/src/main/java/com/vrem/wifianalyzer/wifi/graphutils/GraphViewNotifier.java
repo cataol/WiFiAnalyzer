@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,13 @@
 
 package com.vrem.wifianalyzer.wifi.graphutils;
 
-import android.support.annotation.NonNull;
-
 import com.jjoe64.graphview.GraphView;
 import com.vrem.wifianalyzer.wifi.model.WiFiData;
 
+import androidx.annotation.NonNull;
+
 public interface GraphViewNotifier {
+    @NonNull
     GraphView getGraphView();
 
     void update(@NonNull WiFiData wiFiData);

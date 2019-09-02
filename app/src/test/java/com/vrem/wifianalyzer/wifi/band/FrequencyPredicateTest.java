@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 public class FrequencyPredicateTest {
 
     @Test
-    public void testWiFiBandPredicate() throws Exception {
+    public void testWiFiBandPredicate() {
         assertFalse(new FrequencyPredicate(2399).evaluate(WiFiBand.GHZ2));
         assertTrue(new FrequencyPredicate(2400).evaluate(WiFiBand.GHZ2));
         assertTrue(new FrequencyPredicate(2499).evaluate(WiFiBand.GHZ2));

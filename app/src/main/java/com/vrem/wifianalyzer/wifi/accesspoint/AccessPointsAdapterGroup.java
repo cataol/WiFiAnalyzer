@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
-import android.support.annotation.NonNull;
 import android.widget.ExpandableListView;
 
 import com.vrem.wifianalyzer.MainContext;
@@ -30,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 class AccessPointsAdapterGroup {
     private final Set<String> expanded;
@@ -56,10 +57,10 @@ class AccessPointsAdapterGroup {
     }
 
     void updateGroupBy() {
-        GroupBy groupBy = MainContext.INSTANCE.getSettings().getGroupBy();
-        if (!groupBy.equals(this.groupBy)) {
+        GroupBy currentGroupBy = MainContext.INSTANCE.getSettings().getGroupBy();
+        if (!currentGroupBy.equals(this.groupBy)) {
             expanded.clear();
-            this.groupBy = groupBy;
+            this.groupBy = currentGroupBy;
         }
     }
 
@@ -96,7 +97,7 @@ class AccessPointsAdapterGroup {
             result = wiFiDetail.getSSID();
         }
         if (GroupBy.CHANNEL.equals(this.groupBy)) {
-            result += wiFiDetail.getWiFiSignal().getPrimaryWiFiChannel().getChannel();
+            result += Integer.toString(wiFiDetail.getWiFiSignal().getPrimaryWiFiChannel().getChannel());
         }
         return result;
     }

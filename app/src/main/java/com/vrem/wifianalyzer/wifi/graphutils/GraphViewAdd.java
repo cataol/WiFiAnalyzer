@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,13 @@
 
 package com.vrem.wifianalyzer.wifi.graphutils;
 
-import android.support.annotation.NonNull;
 import android.view.ViewGroup;
 
 import com.jjoe64.graphview.GraphView;
 
 import org.apache.commons.collections4.Closure;
+
+import androidx.annotation.NonNull;
 
 public class GraphViewAdd implements Closure<GraphView> {
     private final ViewGroup viewGroup;

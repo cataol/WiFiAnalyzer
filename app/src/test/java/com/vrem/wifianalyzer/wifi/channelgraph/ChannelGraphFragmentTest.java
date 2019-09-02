@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,37 +18,45 @@
 
 package com.vrem.wifianalyzer.wifi.channelgraph;
 
-import com.vrem.wifianalyzer.BuildConfig;
+import android.os.Build;
+
 import com.vrem.wifianalyzer.MainContextHelper;
+import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.RobolectricUtil;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
+import com.vrem.wifianalyzer.wifi.scanner.ScannerService;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.support.v4.SupportFragmentTestUtil;
+import org.robolectric.annotation.LooperMode;
 
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class ChannelGraphFragmentTest {
 
-    private Scanner scanner;
+    private ScannerService scanner;
     private ChannelGraphFragment fixture;
 
     @Before
     public void setUp() {
         RobolectricUtil.INSTANCE.getActivity();
 
-        scanner = MainContextHelper.INSTANCE.getScanner();
+        scanner = MainContextHelper.INSTANCE.getScannerService();
 
         fixture = new ChannelGraphFragment();
+        RobolectricUtil.INSTANCE.startFragment(fixture);
     }
 
     @After
@@ -57,9 +65,7 @@ public class ChannelGraphFragmentTest {
     }
 
     @Test
-    public void testOnCreateView() throws Exception {
-        // execute
-        SupportFragmentTestUtil.startFragment(fixture);
+    public void testOnCreateView() {
         // validate
         assertNotNull(fixture);
         verify(scanner).update();
@@ -67,9 +73,7 @@ public class ChannelGraphFragmentTest {
     }
 
     @Test
-    public void testOnResume() throws Exception {
-        // setup
-        SupportFragmentTestUtil.startFragment(fixture);
+    public void testOnResume() {
         // execute
         fixture.onResume();
         // validate
@@ -77,12 +81,19 @@ public class ChannelGraphFragmentTest {
     }
 
     @Test
-    public void testOnDestroy() throws Exception {
-        // setup
-        SupportFragmentTestUtil.startFragment(fixture);
+    public void testOnDestroy() {
         // execute
         fixture.onDestroy();
         // validate
         verify(scanner).unregister(fixture.getChannelGraphAdapter());
     }
+
+    @Test
+    public void testRefreshDisabled() {
+        // validate
+        SwipeRefreshLayout swipeRefreshLayout = fixture.getView().findViewById(R.id.graphRefresh);
+        assertFalse(swipeRefreshLayout.isRefreshing());
+        assertFalse(swipeRefreshLayout.isEnabled());
+    }
+
 }

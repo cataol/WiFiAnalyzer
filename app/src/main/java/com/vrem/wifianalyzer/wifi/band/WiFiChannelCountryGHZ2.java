@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.band;
 
-import android.support.annotation.NonNull;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -28,19 +26,24 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import androidx.annotation.NonNull;
+
 class WiFiChannelCountryGHZ2 {
     private final Set<String> countries;
     private final SortedSet<Integer> channels;
     private final SortedSet<Integer> world;
 
     WiFiChannelCountryGHZ2() {
-        countries = new HashSet<>(Arrays.asList("AS", "AU", "CA", "FM", "GU", "MP", "PA", "PR", "UM", "US", "VI"));
+        countries = new HashSet<>(Arrays.asList(
+            "AS", "CA", "CO", "DO", "FM", "GT", "GU", "MP", "MX", "PA", "PR", "UM", "US", "UZ", "VI")
+        );
         channels = new TreeSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
         world = new TreeSet<>(channels);
         world.add(12);
         world.add(13);
     }
 
+    @NonNull
     SortedSet<Integer> findChannels(@NonNull String countryCode) {
         SortedSet<Integer> results = new TreeSet<>(world);
         String code = StringUtils.capitalize(countryCode);

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,12 @@
 package com.vrem.wifianalyzer.wifi.channelrating;
 
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
+import android.os.Build;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.R;
@@ -46,22 +46,27 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class ChannelRatingAdapterTest {
 
     private ChannelRatingAdapter fixture;
@@ -88,7 +93,7 @@ public class ChannelRatingAdapterTest {
     }
 
     @Test
-    public void testGetView() throws Exception {
+    public void testGetView() {
         // setup
         int expectedSize = Strength.values().length;
         Strength expectedStrength = Strength.reverse(Strength.FOUR);
@@ -96,15 +101,16 @@ public class ChannelRatingAdapterTest {
         fixture.add(wiFiChannel);
         when(channelRating.getCount(wiFiChannel)).thenReturn(5);
         when(channelRating.getStrength(wiFiChannel)).thenReturn(Strength.FOUR);
+        ViewGroup viewGroup = mainActivity.findViewById(android.R.id.content);
         // execute
-        View actual = fixture.getView(0, null, null);
+        View actual = fixture.getView(0, null, viewGroup);
         // validate
         assertNotNull(actual);
 
-        assertEquals("1", ((TextView) actual.findViewById(R.id.channelNumber)).getText());
-        assertEquals("5", ((TextView) actual.findViewById(R.id.accessPointCount)).getText());
+        assertEquals("1", actual.<TextView>findViewById(R.id.channelNumber).getText());
+        assertEquals("5", actual.<TextView>findViewById(R.id.accessPointCount).getText());
 
-        RatingBar ratingBar = (RatingBar) actual.findViewById(R.id.channelRating);
+        RatingBar ratingBar = actual.findViewById(R.id.channelRating);
         assertEquals(expectedSize, ratingBar.getMax());
         assertEquals(expectedSize, ratingBar.getNumStars());
         assertEquals(expectedStrength.ordinal() + 1, (int) ratingBar.getRating());
@@ -116,10 +122,10 @@ public class ChannelRatingAdapterTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         // setup
         String expected = mainActivity.getResources().getText(R.string.channel_rating_best_none).toString();
-        WiFiData wiFiData = new WiFiData(Collections.<WiFiDetail>emptyList(), WiFiConnection.EMPTY, Collections.<String>emptyList());
+        WiFiData wiFiData = new WiFiData(Collections.emptyList(), WiFiConnection.EMPTY);
         Predicate<WiFiDetail> predicate = new WiFiBandPredicate(WiFiBand.GHZ5);
         List<WiFiDetail> wiFiDetails = wiFiData.getWiFiDetails(predicate, SortBy.STRENGTH);
         when(settings.getWiFiBand()).thenReturn(WiFiBand.GHZ5);
@@ -134,7 +140,7 @@ public class ChannelRatingAdapterTest {
     }
 
     @Test
-    public void testBestChannelsGHZ2ErrorMessage() throws Exception {
+    public void testBestChannelsGHZ2ErrorMessage() {
         // setup
         Resources resources = mainActivity.getResources();
         String expected = resources.getText(R.string.channel_rating_best_none).toString()
@@ -151,7 +157,7 @@ public class ChannelRatingAdapterTest {
     }
 
     @Test
-    public void testBestChannelsGHZ5WithErrorMessage() throws Exception {
+    public void testBestChannelsGHZ5WithErrorMessage() {
         // setup
         String expected = mainActivity.getResources().getText(R.string.channel_rating_best_none).toString();
         List<WiFiChannel> wiFiChannels = Collections.emptyList();
@@ -165,7 +171,7 @@ public class ChannelRatingAdapterTest {
     }
 
     @Test
-    public void testBestChannelsGHZ5WithChannels() throws Exception {
+    public void testBestChannelsGHZ5WithChannels() {
         // setup
         String expected = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11...";
         List<WiFiChannel> wiFiChannels = Collections.emptyList();

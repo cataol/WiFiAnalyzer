@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@ package com.vrem.wifianalyzer.wifi.filter;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.view.View;
 import android.widget.Button;
 
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.R;
@@ -34,9 +34,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowAlertDialog;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,9 +46,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class FilterTest {
 
     private MainActivity mainActivity;
@@ -57,6 +61,7 @@ public class FilterTest {
     public void setUp() {
         mainActivity = RobolectricUtil.INSTANCE.getActivity();
         fixture = Filter.build();
+        RobolectricUtil.INSTANCE.clearLooper();
         alertDialog = fixture.getAlertDialog();
     }
 
@@ -66,13 +71,13 @@ public class FilterTest {
     }
 
     @Test
-    public void testAlertDialog() throws Exception {
+    public void testAlertDialog() {
         assertFalse(alertDialog.isShowing());
         assertTrue(alertDialog instanceof AlertDialog);
     }
 
     @Test
-    public void testShow() throws Exception {
+    public void testShow() {
         // execute
         fixture.show();
         // validate
@@ -80,7 +85,7 @@ public class FilterTest {
     }
 
     @Test
-    public void testTitle() throws Exception {
+    public void testTitle() {
         // setup
         String expected = mainActivity.getResources().getString(R.string.filter_title);
         ShadowAlertDialog shadowAlertDialog = shadowOf(alertDialog);
@@ -91,7 +96,7 @@ public class FilterTest {
     }
 
     @Test
-    public void testPositiveButton() throws Exception {
+    public void testPositiveButton() {
         // setup
         fixture.show();
         Button button = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
@@ -100,13 +105,14 @@ public class FilterTest {
         // execute
         button.performClick();
         // validate
+        RobolectricUtil.INSTANCE.clearLooper();
         assertFalse(alertDialog.isShowing());
         verify(filterAdapter).save();
         verify(mainActivity).update();
     }
 
     @Test
-    public void testNegativeButton() throws Exception {
+    public void testNegativeButton() {
         // setup
         fixture.show();
         Button button = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
@@ -115,13 +121,14 @@ public class FilterTest {
         // execute
         button.performClick();
         // validate
+        RobolectricUtil.INSTANCE.clearLooper();
         assertFalse(alertDialog.isShowing());
         verify(filterAdapter).reset();
         verify(mainActivity).update();
     }
 
     @Test
-    public void testNeutralButton() throws Exception {
+    public void testNeutralButton() {
         // setup
         fixture.show();
         Button button = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
@@ -130,13 +137,14 @@ public class FilterTest {
         // execute
         button.performClick();
         // validate
+        RobolectricUtil.INSTANCE.clearLooper();
         assertFalse(alertDialog.isShowing());
         verify(filterAdapter).reload();
         verify(mainActivity, never()).update();
     }
 
     @Test
-    public void testWiFiBandFilterViewIsVisible() throws Exception {
+    public void testWiFiBandFilterViewIsVisible() {
         // setup
         fixture.show();
         // execute
@@ -146,7 +154,7 @@ public class FilterTest {
     }
 
     @Test
-    public void testSecurityFilterViewIsVisible() throws Exception {
+    public void testSecurityFilterViewIsVisible() {
         // setup
         fixture.show();
         // execute
@@ -156,7 +164,7 @@ public class FilterTest {
     }
 
     @Test
-    public void testStrengthFilterViewIsVisible() throws Exception {
+    public void testStrengthFilterViewIsVisible() {
         // setup
         fixture.show();
         // execute

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,17 @@
 
 package com.vrem.wifianalyzer.navigation.items;
 
-import android.support.annotation.NonNull;
 import android.view.MenuItem;
 
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
 
+import androidx.annotation.NonNull;
+
 public interface NavigationItem {
     void activate(@NonNull MainActivity mainActivity, @NonNull MenuItem menuItem, @NonNull NavigationMenu navigationMenu);
 
     boolean isRegistered();
+
+    int getVisibility();
 }

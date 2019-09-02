@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -32,16 +29,16 @@ import com.vrem.wifianalyzer.wifi.model.WiFiData;
 import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 import com.vrem.wifianalyzer.wifi.scanner.UpdateNotifier;
 
+import androidx.annotation.NonNull;
+
 class AccessPointsAdapter extends BaseExpandableListAdapter implements UpdateNotifier {
-    private final Context context;
     private AccessPointsAdapterData accessPointsAdapterData;
     private AccessPointDetail accessPointDetail;
     private AccessPointPopup accessPointPopup;
     private ExpandableListView expandableListView;
 
-    AccessPointsAdapter(@NonNull Context context) {
+    AccessPointsAdapter() {
         super();
-        this.context = context;
         setAccessPointsAdapterData(new AccessPointsAdapterData());
         setAccessPointDetail(new AccessPointDetail());
         setAccessPointPopup(new AccessPointPopup());
@@ -54,14 +51,13 @@ class AccessPointsAdapter extends BaseExpandableListAdapter implements UpdateNot
         View view = accessPointDetail.makeView(convertView, parent, wiFiDetail, false);
         attachPopup(view, wiFiDetail);
 
-        ImageView groupIndicator = (ImageView) view.findViewById(R.id.groupIndicator);
+        ImageView groupIndicator = view.findViewById(R.id.groupIndicator);
         int childrenCount = getChildrenCount(groupPosition);
         if (childrenCount > 0) {
             groupIndicator.setVisibility(View.VISIBLE);
             groupIndicator.setImageResource(isExpanded
-                ? R.drawable.ic_expand_less_black_24dp
-                : R.drawable.ic_expand_more_black_24dp);
-            groupIndicator.setColorFilter(ContextCompat.getColor(context, R.color.icons_color));
+                ? R.drawable.ic_expand_less
+                : R.drawable.ic_expand_more);
         } else {
             groupIndicator.setVisibility(View.GONE);
         }

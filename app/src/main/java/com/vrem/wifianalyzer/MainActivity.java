@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,40 +18,55 @@
 
 package com.vrem.wifianalyzer;
 
-import android.content.Intent;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.res.Resources;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
 
+import com.google.android.material.navigation.NavigationView;
+import com.vrem.util.ConfigurationUtils;
 import com.vrem.util.EnumUtils;
-import com.vrem.wifianalyzer.menu.OptionMenu;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
-import com.vrem.wifianalyzer.navigation.NavigationMenuView;
+import com.vrem.wifianalyzer.navigation.NavigationMenuControl;
+import com.vrem.wifianalyzer.navigation.NavigationMenuController;
+import com.vrem.wifianalyzer.navigation.options.OptionMenu;
+import com.vrem.wifianalyzer.permission.PermissionService;
+import com.vrem.wifianalyzer.settings.Repository;
 import com.vrem.wifianalyzer.settings.Settings;
+import com.vrem.wifianalyzer.settings.SettingsFactory;
 import com.vrem.wifianalyzer.wifi.accesspoint.ConnectionView;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
 import com.vrem.wifianalyzer.wifi.band.WiFiChannel;
 
-import static android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnNavigationItemSelectedListener {
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.util.Pair;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+public class MainActivity extends AppCompatActivity implements NavigationMenuControl, OnSharedPreferenceChangeListener {
+
     private MainReload mainReload;
-    private NavigationMenuView navigationMenuView;
-    private NavigationMenu startNavigationMenu;
+    private DrawerNavigation drawerNavigation;
+    private NavigationMenuController navigationMenuController;
     private OptionMenu optionMenu;
     private String currentCountryCode;
+    private PermissionService permissionService;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        Repository repository = new Repository(newBase);
+        Settings settings = SettingsFactory.make(repository);
+        Locale newLocale = settings.getLanguageLocale();
+        Context context = ConfigurationUtils.createContext(newBase, newLocale);
+        super.attachBaseContext(context);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +76,8 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         Settings settings = mainContext.getSettings();
         settings.initializeDefaultValues();
 
-        setTheme(settings.getThemeStyle().themeAppCompatStyle());
+        setTheme(settings.getThemeStyle().getThemeNoActionBar());
+
         setWiFiChannelPairs(mainContext);
 
         mainReload = new MainReload(settings);
@@ -73,22 +89,40 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         setOptionMenu(new OptionMenu());
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setOnClickListener(new WiFiBandToggle());
-        setSupportActionBar(toolbar);
+        ActivityUtils.keepScreenOn();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
+        Toolbar toolbar = ActivityUtils.setupToolbar();
+        drawerNavigation = new DrawerNavigation(this, toolbar);
 
-        startNavigationMenu = settings.getStartMenu();
-        navigationMenuView = new NavigationMenuView(this, startNavigationMenu);
-        onNavigationItemSelected(navigationMenuView.getCurrentMenuItem());
+        navigationMenuController = new NavigationMenuController(this);
+        navigationMenuController.setCurrentNavigationMenu(settings.getSelectedMenu());
+        onNavigationItemSelected(getCurrentMenuItem());
 
         ConnectionView connectionView = new ConnectionView(this);
-        mainContext.getScanner().register(connectionView);
+        mainContext.getScannerService().register(connectionView);
+
+        permissionService = new PermissionService(this);
+        permissionService.check();
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerNavigation.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerNavigation.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (!permissionService.isGranted(requestCode, grantResults)) {
+            finish();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void setWiFiChannelPairs(MainContext mainContext) {
@@ -96,70 +130,59 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         String countryCode = settings.getCountryCode();
         if (!countryCode.equals(currentCountryCode)) {
             Pair<WiFiChannel, WiFiChannel> pair = WiFiBand.GHZ5.getWiFiChannels().getWiFiChannelPairFirst(countryCode);
-            Configuration configuration = mainContext.getConfiguration();
-            configuration.setWiFiChannelPair(pair);
+            mainContext.getConfiguration().setWiFiChannelPair(pair);
             currentCountryCode = countryCode;
         }
     }
 
     private boolean isLargeScreen() {
-        Resources resources = getResources();
-        android.content.res.Configuration configuration = resources.getConfiguration();
-        int screenLayoutSize = configuration.screenLayout & android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK;
-        return screenLayoutSize == android.content.res.Configuration.SCREENLAYOUT_SIZE_LARGE ||
-            screenLayoutSize == android.content.res.Configuration.SCREENLAYOUT_SIZE_XLARGE;
+        Configuration configuration = getResources().getConfiguration();
+        int screenLayoutSize = configuration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+        return screenLayoutSize == Configuration.SCREENLAYOUT_SIZE_LARGE ||
+            screenLayoutSize == Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         MainContext mainContext = MainContext.INSTANCE;
         if (mainReload.shouldReload(mainContext.getSettings())) {
-            reloadActivity();
+            MainContext.INSTANCE.getScannerService().stop();
+            recreate();
         } else {
+            ActivityUtils.keepScreenOn();
             setWiFiChannelPairs(mainContext);
             update();
         }
     }
 
     public void update() {
-        MainContext.INSTANCE.getScanner().update();
+        MainContext.INSTANCE.getScannerService().update();
         updateActionBar();
-    }
-
-    private void reloadActivity() {
-        finish();
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP |
-            Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     @Override
     public void onBackPressed() {
         if (!closeDrawer()) {
-            if (startNavigationMenu.equals(navigationMenuView.getCurrentNavigationMenu())) {
+            NavigationMenu selectedMenu = MainContext.INSTANCE.getSettings().getSelectedMenu();
+            if (selectedMenu.equals(getCurrentNavigationMenu())) {
                 super.onBackPressed();
             } else {
-                navigationMenuView.setCurrentNavigationMenu(startNavigationMenu);
-                onNavigationItemSelected(navigationMenuView.getCurrentMenuItem());
+                setCurrentNavigationMenu(selectedMenu);
+                onNavigationItemSelected(getCurrentMenuItem());
             }
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        try {
-            closeDrawer();
-            NavigationMenu navigationMenu = EnumUtils.find(NavigationMenu.class, menuItem.getItemId(), NavigationMenu.ACCESS_POINTS);
-            navigationMenu.activateNavigationMenu(this, menuItem);
-        } catch (Exception e) {
-            reloadActivity();
-        }
+        closeDrawer();
+        NavigationMenu currentNavigationMenu = EnumUtils.find(NavigationMenu.class, menuItem.getItemId(), NavigationMenu.ACCESS_POINTS);
+        currentNavigationMenu.activateNavigationMenu(this, menuItem);
         return true;
     }
 
     private boolean closeDrawer() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
             return true;
@@ -169,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     @Override
     protected void onPause() {
-        optionMenu.pause();
+        MainContext.INSTANCE.getScannerService().pause();
         updateActionBar();
         super.onPause();
     }
@@ -177,13 +200,18 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @Override
     protected void onResume() {
         super.onResume();
-        optionMenu.resume();
+        if (permissionService.isPermissionGranted()) {
+            if (!permissionService.isSystemEnabled()) {
+                ActivityUtils.startLocationSettings();
+            }
+            MainContext.INSTANCE.getScannerService().resume();
+        }
         updateActionBar();
     }
 
     @Override
     protected void onStop() {
-        MainContext.INSTANCE.getScanner().setWiFiOnExit();
+        MainContext.INSTANCE.getScannerService().stop();
         super.onStop();
     }
 
@@ -195,18 +223,14 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         optionMenu.select(item);
         updateActionBar();
         return true;
     }
 
     public void updateActionBar() {
-        navigationMenuView.getCurrentNavigationMenu().activateOptions(this);
-    }
-
-    public NavigationMenuView getNavigationMenuView() {
-        return navigationMenuView;
+        getCurrentNavigationMenu().activateOptions(this);
     }
 
     public OptionMenu getOptionMenu() {
@@ -217,12 +241,51 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         this.optionMenu = optionMenu;
     }
 
-    private class WiFiBandToggle implements OnClickListener {
-        @Override
-        public void onClick(View view) {
-            if (navigationMenuView.getCurrentNavigationMenu().isWiFiBandSwitchable()) {
-                MainContext.INSTANCE.getSettings().toggleWiFiBand();
-            }
-        }
+    @NonNull
+    @Override
+    public MenuItem getCurrentMenuItem() {
+        return navigationMenuController.getCurrentMenuItem();
+    }
+
+    @NonNull
+    @Override
+    public NavigationMenu getCurrentNavigationMenu() {
+        return navigationMenuController.getCurrentNavigationMenu();
+    }
+
+    @Override
+    public void setCurrentNavigationMenu(@NonNull NavigationMenu navigationMenu) {
+        navigationMenuController.setCurrentNavigationMenu(navigationMenu);
+        MainContext.INSTANCE.getSettings().saveSelectedMenu(navigationMenu);
+    }
+
+    @NonNull
+    @Override
+    public NavigationView getNavigationView() {
+        return navigationMenuController.getNavigationView();
+    }
+
+    public void mainConnectionVisibility(int visibility) {
+        findViewById(R.id.main_connection).setVisibility(visibility);
+    }
+
+    public NavigationMenuController getNavigationMenuController() {
+        return navigationMenuController;
+    }
+
+    public PermissionService getPermissionService() {
+        return permissionService;
+    }
+
+    void setNavigationMenuController(NavigationMenuController navigationMenuController) {
+        this.navigationMenuController = navigationMenuController;
+    }
+
+    void setDrawerNavigation(DrawerNavigation drawerNavigation) {
+        this.drawerNavigation = drawerNavigation;
+    }
+
+    void setPermissionService(PermissionService permissionService) {
+        this.permissionService = permissionService;
     }
 }

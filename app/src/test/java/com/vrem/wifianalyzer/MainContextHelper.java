@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package com.vrem.wifianalyzer;
 import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.vendor.model.VendorService;
 import com.vrem.wifianalyzer.wifi.filter.adapter.FilterAdapter;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
+import com.vrem.wifianalyzer.wifi.scanner.ScannerService;
 
 import org.apache.commons.collections4.Closure;
 import org.apache.commons.collections4.IterableUtils;
@@ -34,7 +34,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 public enum MainContextHelper {
     INSTANCE;
 
-    private final Map<Class, Object> saved;
+    private final Map<Class<?>, Object> saved;
     private final MainContext mainContext;
 
     MainContextHelper() {
@@ -42,7 +42,7 @@ public enum MainContextHelper {
         saved = new HashMap<>();
     }
 
-    private Object save(Class clazz, Object object) {
+    private Object save(Class<?> clazz, Object object) {
         saved.put(clazz, object);
         return mock(clazz);
     }
@@ -59,9 +59,9 @@ public enum MainContextHelper {
         return result;
     }
 
-    public Scanner getScanner() {
-        Scanner result = (Scanner) save(Scanner.class, mainContext.getScanner());
-        mainContext.setScanner(result);
+    public ScannerService getScannerService() {
+        ScannerService result = (ScannerService) save(ScannerService.class, mainContext.getScannerService());
+        mainContext.setScannerService(result);
         return result;
     }
 
@@ -88,16 +88,16 @@ public enum MainContextHelper {
         saved.clear();
     }
 
-    private class RestoreClosure implements Closure<Class> {
+    private class RestoreClosure implements Closure<Class<?>> {
         @Override
-        public void execute(Class input) {
+        public void execute(Class<?> input) {
             Object result = saved.get(input);
             if (input.equals(Settings.class)) {
                 mainContext.setSettings((Settings) result);
             } else if (input.equals(VendorService.class)) {
                 mainContext.setVendorService((VendorService) result);
-            } else if (input.equals(Scanner.class)) {
-                mainContext.setScanner((Scanner) result);
+            } else if (input.equals(ScannerService.class)) {
+                mainContext.setScannerService((ScannerService) result);
             } else if (input.equals(MainActivity.class)) {
                 mainContext.setMainActivity((MainActivity) result);
             } else if (input.equals(Configuration.class)) {

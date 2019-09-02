@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,14 +35,14 @@ public class GraphColorTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         // execute & validate
         assertEquals(fixture, other);
         assertNotSame(fixture, other);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         // execute & validate
         assertEquals(fixture.hashCode(), other.hashCode());
     }

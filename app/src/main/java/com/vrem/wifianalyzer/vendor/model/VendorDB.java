@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,99 +19,132 @@
 package com.vrem.wifianalyzer.vendor.model;
 
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
-import android.support.annotation.RawRes;
 
+import com.vrem.util.FileUtils;
 import com.vrem.wifianalyzer.R;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 
-class VendorDB {
-    private static final int SIZE = 6;
+import androidx.annotation.NonNull;
+
+class VendorDB implements VendorService {
     private final Resources resources;
-    private Map<String, List<String>> vendors;
-    private Map<String, String> macs;
+    private final Map<String, List<String>> vendors;
+    private final Map<String, String> macs;
+    private boolean loaded;
 
     VendorDB(@NonNull Resources resources) {
         this.resources = resources;
+        this.vendors = new TreeMap<>();
+        this.macs = new TreeMap<>();
+        this.loaded = false;
     }
 
-    String findVendorName(String address) {
-        load();
-        return macs.get(address);
+    @NonNull
+    @Override
+    public String findVendorName(String address) {
+        String result = getMacs().get(VendorUtils.clean(address));
+        return result == null ? StringUtils.EMPTY : result;
     }
 
-    List<String> findMacAddresses(String vendorName) {
-        load();
-        return vendors.get(vendorName);
+    @NonNull
+    @Override
+    public List<String> findMacAddresses(String vendorName) {
+        if (StringUtils.isBlank(vendorName)) {
+            return new ArrayList<>();
+        }
+        Locale locale = Locale.getDefault();
+        List<String> results = getVendors().get(vendorName.toUpperCase(locale));
+        return results == null ? new ArrayList<>() : results;
     }
 
-    Map<String, String> getMacs() {
-        load();
-        return macs;
+    @NonNull
+    @Override
+    public List<String> findVendors() {
+        return findVendors(StringUtils.EMPTY);
     }
 
+    @NonNull
+    @Override
+    public List<String> findVendors(@NonNull String filter) {
+        if (StringUtils.isBlank(filter)) {
+            return new ArrayList<>(getVendors().keySet());
+        }
+        Locale locale = Locale.getDefault();
+        String filterToUpperCase = filter.toUpperCase(locale);
+        List<Predicate<String>> predicates = Arrays.asList(new StringContains(filterToUpperCase), new MacContains(filterToUpperCase));
+        return new ArrayList<>(CollectionUtils.select(getVendors().keySet(), PredicateUtils.anyPredicate(predicates)));
+    }
+
+    @NonNull
     Map<String, List<String>> getVendors() {
-        load();
+        load(resources);
         return vendors;
     }
 
-    private String[] readFile(@NonNull Resources resources, @RawRes int id) {
-        InputStream inputStream = null;
-        try {
-            inputStream = resources.openRawResource(id);
-            int size = inputStream.available();
-            byte[] bytes = new byte[size];
-            int count = inputStream.read(bytes);
-            if (count != size) {
-                return new String[]{};
-            }
-            return new String(bytes).split("\n");
-        } catch (Exception e) {
-            // file is corrupted
-            return new String[]{};
-        } finally {
-            close(inputStream);
-        }
+    @NonNull
+    Map<String, String> getMacs() {
+        load(resources);
+        return macs;
     }
 
-    private void close(InputStream inputStream) {
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (Exception e) {
-                // do nothing
-            }
-        }
-    }
-
-    private void load() {
-        if (vendors != null) {
-            return;
-        }
-        long time = System.currentTimeMillis();
-        vendors = new HashMap<>();
-        macs = new HashMap<>();
-        String[] lines = readFile(resources, R.raw.data);
-        for (String data : lines) {
-            String[] parts = StringUtils.split(data, "|");
-            if (parts.length == 2) {
-                List<String> addresses = new ArrayList<>();
-                String name = parts[0];
-                vendors.put(name, addresses);
-                int length = parts[1].length();
-                for (int i = 0; i < length; i += SIZE) {
-                    String mac = parts[1].substring(i, i + SIZE);
-                    addresses.add(mac);
-                    macs.put(mac, name);
+    private void load(@NonNull Resources resources) {
+        if (!loaded) {
+            loaded = true;
+            String[] lines = FileUtils.readFile(resources, R.raw.data).split("\n");
+            for (String data : lines) {
+                if (data != null) {
+                    String[] parts = data.split("\\|");
+                    if (parts.length == 2) {
+                        List<String> addresses = new ArrayList<>();
+                        String name = parts[0];
+                        vendors.put(name, addresses);
+                        int length = parts[1].length();
+                        for (int i = 0; i < length; i += VendorUtils.MAX_SIZE) {
+                            String mac = parts[1].substring(i, i + VendorUtils.MAX_SIZE);
+                            addresses.add(VendorUtils.toMacAddress(mac));
+                            macs.put(mac, name);
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private class StringContains implements Predicate<String> {
+        private final String filter;
+
+        private StringContains(@NonNull String filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean evaluate(String object) {
+            return object.contains(filter);
+        }
+    }
+
+    private class MacContains implements Predicate<String> {
+        private final String filter;
+
+        private MacContains(@NonNull String filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean evaluate(String object) {
+            return IterableUtils.matchesAny(findMacAddresses(object), new StringContains(filter));
         }
     }
 

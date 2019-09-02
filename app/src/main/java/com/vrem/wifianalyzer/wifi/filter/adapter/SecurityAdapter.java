@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
 
 package com.vrem.wifianalyzer.wifi.filter.adapter;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.wifi.model.Security;
 
 import java.util.Set;
 
-class SecurityAdapter extends EnumFilterAdapter<Security> {
+import androidx.annotation.NonNull;
+
+public class SecurityAdapter extends EnumFilterAdapter<Security> {
 
     SecurityAdapter(@NonNull Set<Security> values) {
         super(Security.class, values);
@@ -34,7 +34,7 @@ class SecurityAdapter extends EnumFilterAdapter<Security> {
 
     @Override
     public int getColor(@NonNull Security object) {
-        return contains(object) ? R.color.connected : R.color.icons_color;
+        return contains(object) ? R.color.selected : R.color.regular;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,45 +18,36 @@
 
 package com.vrem.wifianalyzer;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.settings.ThemeStyle;
-import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointViewType;
 import com.vrem.wifianalyzer.wifi.accesspoint.ConnectionViewType;
+
+import java.util.Locale;
+
+import androidx.annotation.NonNull;
 
 class MainReload {
     private ThemeStyle themeStyle;
-    private AccessPointViewType accessPointViewType;
     private ConnectionViewType connectionViewType;
-    private int graphMaximumY;
+    private Locale languageLocale;
 
     MainReload(@NonNull Settings settings) {
         setThemeStyle(settings.getThemeStyle());
-        setAccessPointViewType(settings.getAccessPointView());
         setConnectionViewType(settings.getConnectionViewType());
-        setGraphMaximumY(settings.getGraphMaximumY());
+        setLanguageLocale(settings.getLanguageLocale());
     }
 
     boolean shouldReload(@NonNull Settings settings) {
-        return isThemeChanged(settings) || isAccessPointViewChanged(settings)
-            || isConnectionViewTypeChanged(settings) || isGraphMaximumYChanged(settings);
-    }
-
-    private boolean isAccessPointViewChanged(Settings settings) {
-        AccessPointViewType settingAccessPointViewType = settings.getAccessPointView();
-        boolean accessPointViewChanged = !getAccessPointViewType().equals(settingAccessPointViewType);
-        if (accessPointViewChanged) {
-            setAccessPointViewType(settingAccessPointViewType);
-        }
-        return accessPointViewChanged;
+        return isThemeChanged(settings)
+            || isConnectionViewTypeChanged(settings)
+            || isLanguageChanged(settings);
     }
 
     private boolean isConnectionViewTypeChanged(Settings settings) {
-        ConnectionViewType connectionViewType = settings.getConnectionViewType();
-        boolean connectionViewTypeChanged = !getConnectionViewType().equals(connectionViewType);
+        ConnectionViewType currentConnectionViewType = settings.getConnectionViewType();
+        boolean connectionViewTypeChanged = !getConnectionViewType().equals(currentConnectionViewType);
         if (connectionViewTypeChanged) {
-            setConnectionViewType(connectionViewType);
+            setConnectionViewType(currentConnectionViewType);
         }
         return connectionViewTypeChanged;
     }
@@ -70,15 +61,16 @@ class MainReload {
         return themeChanged;
     }
 
-    private boolean isGraphMaximumYChanged(Settings settings) {
-        int graphMaximumY = settings.getGraphMaximumY();
-        boolean graphMaximumYChanged = graphMaximumY != getGraphMaximumY();
-        if (graphMaximumYChanged) {
-            setGraphMaximumY(graphMaximumY);
+    private boolean isLanguageChanged(Settings settings) {
+        Locale settingLanguageLocale = settings.getLanguageLocale();
+        boolean languageLocaleChanged = !getLanguageLocale().equals(settingLanguageLocale);
+        if (languageLocaleChanged) {
+            setLanguageLocale(settingLanguageLocale);
         }
-        return graphMaximumYChanged;
+        return languageLocaleChanged;
     }
 
+    @NonNull
     ThemeStyle getThemeStyle() {
         return themeStyle;
     }
@@ -87,14 +79,7 @@ class MainReload {
         this.themeStyle = themeStyle;
     }
 
-    AccessPointViewType getAccessPointViewType() {
-        return accessPointViewType;
-    }
-
-    private void setAccessPointViewType(@NonNull AccessPointViewType accessPointViewType) {
-        this.accessPointViewType = accessPointViewType;
-    }
-
+    @NonNull
     ConnectionViewType getConnectionViewType() {
         return connectionViewType;
     }
@@ -103,12 +88,13 @@ class MainReload {
         this.connectionViewType = connectionViewType;
     }
 
-    int getGraphMaximumY() {
-        return graphMaximumY;
+    @NonNull
+    Locale getLanguageLocale() {
+        return languageLocale;
     }
 
-    private void setGraphMaximumY(int graphMaximumY) {
-        this.graphMaximumY = graphMaximumY;
+    private void setLanguageLocale(Locale languageLocale) {
+        this.languageLocale = languageLocale;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.model;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.util.EnumUtils;
 import com.vrem.wifianalyzer.R;
 
@@ -28,15 +26,18 @@ import org.apache.commons.collections4.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+import androidx.annotation.NonNull;
+
 public enum Security {
-    NONE(R.drawable.ic_lock_open_black_18dp),
-    WPS(R.drawable.ic_lock_outline_black_18dp),
-    WEP(R.drawable.ic_lock_outline_black_18dp),
-    WPA(R.drawable.ic_lock_black_18dp),
-    WPA2(R.drawable.ic_lock_black_18dp);
+    NONE(R.drawable.ic_lock_open),
+    WPS(R.drawable.ic_lock_outline),
+    WEP(R.drawable.ic_lock_outline),
+    WPA(R.drawable.ic_lock),
+    WPA2(R.drawable.ic_lock);
 
     private final int imageResource;
 
@@ -44,10 +45,11 @@ public enum Security {
         this.imageResource = imageResource;
     }
 
+    @NonNull
     public static List<Security> findAll(String capabilities) {
         Set<Security> results = new TreeSet<>();
         if (capabilities != null) {
-            String[] values = capabilities.toUpperCase()
+            String[] values = capabilities.toUpperCase(Locale.getDefault())
                 .replace("][", "-").replace("]", "").replace("[", "").split("-");
             for (String value : values) {
                 try {
@@ -60,6 +62,7 @@ public enum Security {
         return new ArrayList<>(results);
     }
 
+    @NonNull
     public static Security findOne(String capabilities) {
         Security result = IterableUtils.find(EnumUtils.values(Security.class), new SecurityPredicate(findAll(capabilities)));
         return result == null ? Security.NONE : result;

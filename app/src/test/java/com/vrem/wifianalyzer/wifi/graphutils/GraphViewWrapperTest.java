@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.vrem.wifianalyzer.wifi.graphutils;
 
-import android.content.res.Resources;
+import android.graphics.Color;
 import android.view.View;
 
 import com.jjoe64.graphview.GraphView;
@@ -28,13 +28,14 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.BaseSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.vrem.wifianalyzer.Configuration;
+import com.vrem.wifianalyzer.settings.ThemeStyle;
 import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,15 +60,11 @@ public class GraphViewWrapperTest {
     @Mock
     private LegendRenderer legendRenderer;
     @Mock
-    private Resources resources;
-    @Mock
     private SeriesCache seriesCache;
     @Mock
     private SeriesOptions seriesOptions;
     @Mock
     private BaseSeries<DataPoint> baseSeries;
-    @Mock
-    private BaseSeries<DataPoint> currentSeries;
 
     private DataPoint dataPoint;
     private DataPoint[] dataPoints;
@@ -82,7 +79,7 @@ public class GraphViewWrapperTest {
 
         when(graphView.getLegendRenderer()).thenReturn(legendRenderer);
 
-        fixture = new GraphViewWrapper(graphView, GraphLegend.HIDE) {
+        fixture = new GraphViewWrapper(graphView, GraphLegend.HIDE, ThemeStyle.DARK) {
             @Override
             protected LegendRenderer newLegendRenderer() {
                 return legendRenderer;
@@ -95,15 +92,13 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testRemoveSeries() throws Exception {
+    public void testRemoveSeries() {
         // setup
         Set<WiFiDetail> newSeries = Collections.emptySet();
         List<WiFiDetail> difference = Collections.emptyList();
         List<BaseSeries<DataPoint>> removed = Collections.singletonList(baseSeries);
-        int color = 10;
         when(seriesCache.difference(newSeries)).thenReturn(difference);
         when(seriesCache.remove(difference)).thenReturn(removed);
-        when(baseSeries.getColor()).thenReturn(color);
         // execute
         fixture.removeSeries(newSeries);
         // validate
@@ -114,7 +109,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testDifferenceSeries() throws Exception {
+    public void testDifferenceSeries() {
         // setup
         Set<WiFiDetail> newSeries = Collections.emptySet();
         List<WiFiDetail> expected = Collections.emptyList();
@@ -127,7 +122,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testAddSeriesDirectly() throws Exception {
+    public void testAddSeriesDirectly() {
         // execute
         fixture.addSeries(baseSeries);
         // validate
@@ -135,7 +130,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testAddSeriesWhenSeriesExistsDoesNotAddSeries() throws Exception {
+    public void testAddSeriesWhenSeriesExistsDoesNotAddSeries() {
         // setup
         when(seriesCache.contains(wiFiDetail)).thenReturn(true);
         // execute
@@ -147,7 +142,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testAddSeriesAddsSeries() throws Exception {
+    public void testAddSeriesAddsSeries() {
         // setup
         String expectedTitle = wiFiDetail.getSSID() + " " + wiFiDetail.getWiFiSignal().getChannelDisplay();
         boolean connected = wiFiDetail.getWiFiAdditional().getWiFiConnection().isConnected();
@@ -167,7 +162,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testUpdateSeriesWhenSeriesDoesNotExistsDoesNotUpdateSeries() throws Exception {
+    public void testUpdateSeriesWhenSeriesDoesNotExistsDoesNotUpdateSeries() {
         // setup
         when(seriesCache.contains(wiFiDetail)).thenReturn(false);
         // execute
@@ -179,7 +174,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testUpdateSeriesWhenSeriesDoesExists() throws Exception {
+    public void testUpdateSeriesWhenSeriesDoesExists() {
         // setup
         boolean connected = wiFiDetail.getWiFiAdditional().getWiFiConnection().isConnected();
         when(seriesCache.contains(wiFiDetail)).thenReturn(true);
@@ -196,7 +191,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testAppendSeriesWhenSeriesDoesNotExistsDoesNotUpdateSeries() throws Exception {
+    public void testAppendSeriesWhenSeriesDoesNotExistsDoesNotUpdateSeries() {
         // setup
         int count = 10;
         when(seriesCache.contains(wiFiDetail)).thenReturn(false);
@@ -209,7 +204,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testAppendSeriesWhenSeriesDoesExists() throws Exception {
+    public void testAppendSeriesWhenSeriesDoesExists() {
         // setup
         int count = 10;
         boolean connected = wiFiDetail.getWiFiAdditional().getWiFiConnection().isConnected();
@@ -227,7 +222,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testUpdateLegend() throws Exception {
+    public void testUpdateLegend() {
         // setup
         float textSize = 10f;
         when(graphView.getTitleTextSize()).thenReturn(textSize);
@@ -239,10 +234,11 @@ public class GraphViewWrapperTest {
         verify(legendRenderer).resetStyles();
         verify(legendRenderer).setWidth(0);
         verify(legendRenderer).setTextSize(textSize);
+        verify(legendRenderer).setTextColor(Color.WHITE);
     }
 
     @Test
-    public void testSetVisibility() throws Exception {
+    public void testSetVisibility() {
         // execute
         fixture.setVisibility(View.VISIBLE);
         // validate
@@ -250,13 +246,13 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testCalculateGraphType() throws Exception {
+    public void testCalculateGraphType() {
         // execute & validate
         assertTrue(fixture.calculateGraphType() > 0);
     }
 
     @Test
-    public void testSetViewport() throws Exception {
+    public void testSetViewport() {
         // setup
         when(graphView.getGridLabelRenderer()).thenReturn(gridLabelRenderer);
         when(gridLabelRenderer.getNumHorizontalLabels()).thenReturn(10);
@@ -272,16 +268,16 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testGetSize() throws Exception {
+    public void testGetSize() {
         // execute & validate
-        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphViewWrapper.TYPE1));
-        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphViewWrapper.TYPE2));
-        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphViewWrapper.TYPE3));
-        assertEquals(Configuration.SIZE_MIN, fixture.getSize(GraphViewWrapper.TYPE4));
+        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphConstants.TYPE1));
+        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphConstants.TYPE2));
+        assertEquals(Configuration.SIZE_MAX, fixture.getSize(GraphConstants.TYPE3));
+        assertEquals(Configuration.SIZE_MIN, fixture.getSize(GraphConstants.TYPE4));
     }
 
     @Test
-    public void testSetViewportWithMinAndMax() throws Exception {
+    public void testSetViewportWithMinAndMax() {
         // setup
         when(graphView.getViewport()).thenReturn(viewport);
         // execute
@@ -293,7 +289,7 @@ public class GraphViewWrapperTest {
     }
 
     @Test
-    public void testIsNewSeries() throws Exception {
+    public void testIsNewSeries() {
         // setup
         when(seriesCache.contains(wiFiDetail)).thenReturn(false);
         // execute

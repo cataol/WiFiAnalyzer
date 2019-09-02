@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.band;
 
-import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
-
 import org.apache.commons.collections4.Closure;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
@@ -30,6 +27,9 @@ import org.apache.commons.collections4.Transformer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 public abstract class WiFiChannels {
     public static final Pair<WiFiChannel, WiFiChannel> UNKNOWN = new Pair<>(WiFiChannel.UNKNOWN, WiFiChannel.UNKNOWN);
@@ -49,6 +49,7 @@ public abstract class WiFiChannels {
         return frequency >= wiFiRange.first && frequency <= wiFiRange.second;
     }
 
+    @NonNull
     public WiFiChannel getWiFiChannelByFrequency(int frequency) {
         Pair<WiFiChannel, WiFiChannel> found = null;
         if (isInRange(frequency)) {
@@ -57,6 +58,7 @@ public abstract class WiFiChannels {
         return found == null ? WiFiChannel.UNKNOWN : getWiFiChannel(frequency, found);
     }
 
+    @NonNull
     WiFiChannel getWiFiChannelByChannel(int channel) {
         Pair<WiFiChannel, WiFiChannel> found = IterableUtils.find(wiFiChannelPairs, new ChannelPredicate(channel));
         return found == null
@@ -64,20 +66,24 @@ public abstract class WiFiChannels {
             : new WiFiChannel(channel, found.first.getFrequency() + ((channel - found.first.getChannel()) * FREQUENCY_SPREAD));
     }
 
+    @NonNull
     public WiFiChannel getWiFiChannelFirst() {
         return wiFiChannelPairs.get(0).first;
     }
 
+    @NonNull
     public WiFiChannel getWiFiChannelLast() {
         return wiFiChannelPairs.get(wiFiChannelPairs.size() - 1).second;
     }
 
+    @NonNull
     public List<WiFiChannel> getWiFiChannels() {
         List<WiFiChannel> results = new ArrayList<>();
         IterableUtils.forEach(wiFiChannelPairs, new WiFiChannelClosure(results));
         return results;
     }
 
+    @NonNull
     WiFiChannel getWiFiChannel(int frequency, @NonNull Pair<WiFiChannel, WiFiChannel> wiFiChannelPair) {
         WiFiChannel first = wiFiChannelPair.first;
         WiFiChannel last = wiFiChannelPair.second;
@@ -88,16 +94,21 @@ public abstract class WiFiChannels {
         return WiFiChannel.UNKNOWN;
     }
 
+    @NonNull
     public abstract List<WiFiChannel> getAvailableChannels(String countryCode);
 
     public abstract boolean isChannelAvailable(String countryCode, int channel);
 
+    @NonNull
     public abstract List<Pair<WiFiChannel, WiFiChannel>> getWiFiChannelPairs();
 
+    @NonNull
     public abstract Pair<WiFiChannel, WiFiChannel> getWiFiChannelPairFirst(String countryCode);
 
+    @NonNull
     public abstract WiFiChannel getWiFiChannelByFrequency(int frequency, @NonNull Pair<WiFiChannel, WiFiChannel> wiFiChannelPair);
 
+    @NonNull
     List<WiFiChannel> getAvailableChannels(SortedSet<Integer> channels) {
         return new ArrayList<>(CollectionUtils.collect(channels, new ToWiFiChannel(this)));
     }

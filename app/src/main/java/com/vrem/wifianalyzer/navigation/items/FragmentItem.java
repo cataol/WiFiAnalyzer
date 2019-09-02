@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,37 +18,45 @@
 
 package com.vrem.wifianalyzer.navigation.items;
 
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
-import com.vrem.wifianalyzer.navigation.NavigationMenuView;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 class FragmentItem implements NavigationItem {
     private final Fragment fragment;
     private final boolean registered;
-
-    FragmentItem(@NonNull Fragment fragment, boolean registered) {
-        this.fragment = fragment;
-        this.registered = registered;
-    }
+    private final int visibility;
 
     FragmentItem(@NonNull Fragment fragment) {
-        this(fragment, false);
+        this(fragment, true, View.VISIBLE);
+    }
+
+    FragmentItem(@NonNull Fragment fragment, boolean registered) {
+        this(fragment, registered, View.VISIBLE);
+    }
+
+    FragmentItem(@NonNull Fragment fragment, boolean registered, int visibility) {
+        this.fragment = fragment;
+        this.registered = registered;
+        this.visibility = visibility;
     }
 
     @Override
     public void activate(@NonNull MainActivity mainActivity, @NonNull MenuItem menuItem, @NonNull NavigationMenu navigationMenu) {
-        NavigationMenuView navigationMenuView = mainActivity.getNavigationMenuView();
-        navigationMenuView.setCurrentNavigationMenu(navigationMenu);
-        startFragment(mainActivity);
-        mainActivity.setTitle(menuItem.getTitle());
-        mainActivity.updateActionBar();
+        FragmentManager fragmentManager = mainActivity.getSupportFragmentManager();
+        if (fragmentManager.isStateSaved()) {
+            return;
+        }
+        updateMainActivity(mainActivity, menuItem, navigationMenu);
+        startFragment(fragmentManager);
     }
 
     @Override
@@ -56,13 +64,26 @@ class FragmentItem implements NavigationItem {
         return registered;
     }
 
-    private void startFragment(@NonNull MainActivity mainActivity) {
-        FragmentManager fragmentManager = mainActivity.getSupportFragmentManager();
+    @Override
+    public int getVisibility() {
+        return visibility;
+    }
+
+    @NonNull
+    Fragment getFragment() {
+        return fragment;
+    }
+
+    private void startFragment(FragmentManager fragmentManager) {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.main_fragment, fragment).commit();
     }
 
-    Fragment getFragment() {
-        return fragment;
+    private void updateMainActivity(@NonNull MainActivity mainActivity, @NonNull MenuItem menuItem, @NonNull NavigationMenu navigationMenu) {
+        mainActivity.setCurrentNavigationMenu(navigationMenu);
+        mainActivity.setTitle(menuItem.getTitle());
+        mainActivity.updateActionBar();
+        mainActivity.mainConnectionVisibility(visibility);
     }
+
 }

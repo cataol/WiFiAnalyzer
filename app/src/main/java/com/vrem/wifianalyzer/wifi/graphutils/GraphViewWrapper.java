@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.vrem.wifianalyzer.wifi.graphutils;
 
-import android.support.annotation.NonNull;
+import android.graphics.Color;
 import android.view.View;
 
 import com.jjoe64.graphview.GraphView;
@@ -31,6 +31,7 @@ import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.Configuration;
+import com.vrem.wifianalyzer.settings.ThemeStyle;
 import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointDetail;
 import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointPopup;
 import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
@@ -43,15 +44,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class GraphViewWrapper implements GraphConstants {
+import androidx.annotation.NonNull;
+
+public class GraphViewWrapper {
     private final GraphView graphView;
+    private final ThemeStyle themeStyle;
     private GraphLegend graphLegend;
     private SeriesCache seriesCache;
     private SeriesOptions seriesOptions;
 
-    public GraphViewWrapper(@NonNull GraphView graphView, @NonNull GraphLegend graphLegend) {
+    public GraphViewWrapper(@NonNull GraphView graphView, @NonNull GraphLegend graphLegend, @NonNull ThemeStyle themeStyle) {
         this.graphView = graphView;
         this.graphLegend = graphLegend;
+        this.themeStyle = themeStyle;
         setSeriesCache(new SeriesCache());
         setSeriesOptions(new SeriesOptions());
     }
@@ -68,6 +73,7 @@ public class GraphViewWrapper implements GraphConstants {
         IterableUtils.forEach(seriesCache.remove(differenceSeries(newSeries)), new RemoveClouser());
     }
 
+    @NonNull
     public List<WiFiDetail> differenceSeries(@NonNull Set<WiFiDetail> newSeries) {
         return seriesCache.difference(newSeries);
     }
@@ -138,6 +144,7 @@ public class GraphViewWrapper implements GraphConstants {
         legendRenderer.resetStyles();
         legendRenderer.setWidth(0);
         legendRenderer.setTextSize(graphView.getTitleTextSize());
+        legendRenderer.setTextColor(ThemeStyle.DARK.equals(themeStyle) ? Color.WHITE : Color.BLACK);
         graphLegend.display(legendRenderer);
     }
 
@@ -155,7 +162,7 @@ public class GraphViewWrapper implements GraphConstants {
             messageDigest.update(graphType.getBytes());
             return Arrays.hashCode(messageDigest.digest());
         } catch (Exception e) {
-            return TYPE1;
+            return GraphConstants.TYPE1;
         }
     }
 
@@ -172,7 +179,8 @@ public class GraphViewWrapper implements GraphConstants {
     }
 
     public int getSize(int value) {
-        return value == TYPE1 || value == TYPE2 || value == TYPE3 ? Configuration.SIZE_MAX : Configuration.SIZE_MIN;
+        return value == GraphConstants.TYPE1 || value == GraphConstants.TYPE2 || value == GraphConstants.TYPE3
+            ? Configuration.SIZE_MAX : Configuration.SIZE_MIN;
     }
 
     LegendRenderer newLegendRenderer() {
@@ -196,7 +204,7 @@ public class GraphViewWrapper implements GraphConstants {
         public void onTap(@NonNull Series series, @NonNull DataPointInterface dataPoint) {
             WiFiDetail wiFiDetail = seriesCache.find(series);
             if (wiFiDetail != null) {
-                View popupView = getAccessPointDetail().makeViewPopup(wiFiDetail);
+                View popupView = getAccessPointDetail().makeViewDetailed(wiFiDetail);
                 getAccessPointPopup().show(popupView);
             }
         }

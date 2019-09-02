@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.model;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.util.EnumUtils;
 import com.vrem.wifianalyzer.wifi.band.FrequencyPredicate;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
@@ -30,8 +28,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.Locale;
+
+import androidx.annotation.NonNull;
+
 public class WiFiSignal {
-    public static final WiFiSignal EMPTY = new WiFiSignal(0, 0, WiFiWidth.MHZ_20, 0);
+    public static final WiFiSignal EMPTY = new WiFiSignal(0, 0, WiFiWidth.MHZ_20, 0, false);
     public static final String FREQUENCY_UNITS = "MHz";
 
     private final int primaryFrequency;
@@ -39,12 +41,14 @@ public class WiFiSignal {
     private final WiFiWidth wiFiWidth;
     private final WiFiBand wiFiBand;
     private final int level;
+    private final boolean is80211mc;
 
-    public WiFiSignal(int primaryFrequency, int centerFrequency, @NonNull WiFiWidth wiFiWidth, int level) {
+    public WiFiSignal(int primaryFrequency, int centerFrequency, @NonNull WiFiWidth wiFiWidth, int level, boolean is80211mc) {
         this.primaryFrequency = primaryFrequency;
         this.centerFrequency = centerFrequency;
         this.wiFiWidth = wiFiWidth;
         this.level = level;
+        this.is80211mc = is80211mc;
         this.wiFiBand = EnumUtils.find(WiFiBand.class, new FrequencyPredicate(primaryFrequency), WiFiBand.GHZ2);
     }
 
@@ -64,18 +68,22 @@ public class WiFiSignal {
         return getCenterFrequency() + getWiFiWidth().getFrequencyWidthHalf();
     }
 
+    @NonNull
     public WiFiBand getWiFiBand() {
         return wiFiBand;
     }
 
+    @NonNull
     public WiFiWidth getWiFiWidth() {
         return wiFiWidth;
     }
 
+    @NonNull
     public WiFiChannel getPrimaryWiFiChannel() {
         return getWiFiBand().getWiFiChannels().getWiFiChannelByFrequency(getPrimaryFrequency());
     }
 
+    @NonNull
     public WiFiChannel getCenterWiFiChannel() {
         return getWiFiBand().getWiFiChannels().getWiFiChannelByFrequency(getCenterFrequency());
     }
@@ -84,12 +92,19 @@ public class WiFiSignal {
         return level;
     }
 
+    public boolean is80211mc() {
+        return is80211mc;
+    }
+
+    @NonNull
     public Strength getStrength() {
         return Strength.calculate(level);
     }
 
-    public double getDistance() {
-        return WiFiUtils.calculateDistance(getPrimaryFrequency(), getLevel());
+    @NonNull
+    public String getDistance() {
+        double distance = WiFiUtils.calculateDistance(getPrimaryFrequency(), getLevel());
+        return String.format(Locale.ENGLISH, "~%.1fm", distance);
     }
 
     public boolean isInRange(int frequency) {
@@ -100,7 +115,7 @@ public class WiFiSignal {
     public String getChannelDisplay() {
         int primaryChannel = getPrimaryWiFiChannel().getChannel();
         int centerChannel = getCenterWiFiChannel().getChannel();
-        String channel = "" + primaryChannel;
+        String channel = Integer.toString(primaryChannel);
         if (primaryChannel != centerChannel) {
             channel += "(" + centerChannel + ")";
         }

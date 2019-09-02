@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,14 @@ import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
 import com.vrem.wifianalyzer.wifi.band.WiFiChannel;
 import com.vrem.wifianalyzer.wifi.band.WiFiChannels;
-import com.vrem.wifianalyzer.wifi.graphutils.GraphViewBuilder;
+import com.vrem.wifianalyzer.wifi.graphutils.GraphConstants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Locale;
 
@@ -58,15 +58,15 @@ public class ChannelAxisLabelTest {
     }
 
     @Test
-    public void testYAxis() throws Exception {
-        assertEquals(StringUtils.EMPTY, fixture.formatLabel(GraphViewBuilder.MIN_Y, false));
-        assertEquals("-99", fixture.formatLabel(GraphViewBuilder.MIN_Y + 1, false));
-        assertEquals("0", fixture.formatLabel(GraphViewBuilder.MAX_Y, false));
-        assertEquals(StringUtils.EMPTY, fixture.formatLabel(GraphViewBuilder.MAX_Y + 1, false));
+    public void testYAxis() {
+        assertEquals(StringUtils.EMPTY, fixture.formatLabel(GraphConstants.MIN_Y, false));
+        assertEquals("-99", fixture.formatLabel(GraphConstants.MIN_Y + 1, false));
+        assertEquals("0", fixture.formatLabel(GraphConstants.MAX_Y, false));
+        assertEquals(StringUtils.EMPTY, fixture.formatLabel(GraphConstants.MAX_Y + 1, false));
     }
 
     @Test
-    public void testXAxis() throws Exception {
+    public void testXAxis() {
         // setup
         WiFiChannel wiFiChannel = WiFiBand.GHZ2.getWiFiChannels().getWiFiChannelFirst();
         // execute
@@ -77,7 +77,7 @@ public class ChannelAxisLabelTest {
     }
 
     @Test
-    public void testXAxisWithFrequencyInRange() throws Exception {
+    public void testXAxisWithFrequencyInRange() {
         // setup
         WiFiChannel wiFiChannel = WiFiBand.GHZ2.getWiFiChannels().getWiFiChannelFirst();
         // execute & validate
@@ -87,7 +87,7 @@ public class ChannelAxisLabelTest {
     }
 
     @Test
-    public void testXAxisWithFrequencyNotAllowedInLocale() throws Exception {
+    public void testXAxisWithFrequencyNotAllowedInLocale() {
         // setup
         WiFiChannel wiFiChannel = WiFiBand.GHZ2.getWiFiChannels().getWiFiChannelLast();
         // execute
@@ -97,7 +97,7 @@ public class ChannelAxisLabelTest {
     }
 
     @Test
-    public void testXAxisWithUnknownFrequencyReturnEmptyString() throws Exception {
+    public void testXAxisWithUnknownFrequencyReturnEmptyString() {
         // setup
         WiFiChannels wiFiChannels = WiFiBand.GHZ2.getWiFiChannels();
         WiFiChannel wiFiChannel = wiFiChannels.getWiFiChannelFirst();

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ public class TimeGraphCacheTest {
     }
 
     @Test
-    public void testAll() throws Exception {
+    public void testAll() {
         // setup
         List<WiFiDetail> expected = withWiFiDetails();
         // execute
@@ -57,7 +57,7 @@ public class TimeGraphCacheTest {
     }
 
     @Test
-    public void testActive() throws Exception {
+    public void testActive() {
         // setup
         List<WiFiDetail> expected = withWiFiDetails();
         // execute
@@ -68,7 +68,7 @@ public class TimeGraphCacheTest {
     }
 
     @Test
-    public void testClear() throws Exception {
+    public void testClear() {
         // setup
         List<WiFiDetail> expected = withWiFiDetails();
         // execute
@@ -80,7 +80,7 @@ public class TimeGraphCacheTest {
     }
 
     @Test
-    public void testReset() throws Exception {
+    public void testReset() {
         // setup
         List<WiFiDetail> expected = withWiFiDetails();
         // execute
@@ -92,7 +92,8 @@ public class TimeGraphCacheTest {
     }
 
     private WiFiDetail withWiFiDetail(String SSID) {
-        return new WiFiDetail(SSID, "BSSID", StringUtils.EMPTY, new WiFiSignal(100, 100, WiFiWidth.MHZ_20, 5));
+        return new WiFiDetail(SSID, "BSSID", StringUtils.EMPTY,
+            new WiFiSignal(100, 100, WiFiWidth.MHZ_20, 5, true));
     }
 
     private List<WiFiDetail> withWiFiDetails() {

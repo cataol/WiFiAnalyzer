@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 package com.vrem.wifianalyzer.wifi.scanner;
 
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
-import android.support.annotation.NonNull;
 
 import com.vrem.wifianalyzer.wifi.band.WiFiWidth;
 import com.vrem.wifianalyzer.wifi.model.WiFiConnection;
@@ -33,10 +31,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -55,17 +55,12 @@ public class TransformerTest {
     private static final String WPA = "WPA";
     private static final int FREQUENCY = 2435;
     private static final int LEVEL = -40;
-    private static final int IP_ADDRESS = 123456789;
+    private static final int IP_ADDRESS_VALUE = 123456789;
+    private static final String IP_ADDRESS = "21.205.91.7";
     private static final int LINK_SPEED = 21;
 
     @Mock
     private WifiInfo wifiInfo;
-    @Mock
-    private WifiConfiguration wifiConfiguration1;
-    @Mock
-    private WifiConfiguration wifiConfiguration2;
-    @Mock
-    private WifiConfiguration wifiConfiguration3;
     @Mock
     private ScanResult scanResult1;
     @Mock
@@ -74,44 +69,28 @@ public class TransformerTest {
     private ScanResult scanResult3;
 
     private List<CacheResult> cacheResults;
-    private List<WifiConfiguration> wifiConfigurations;
     private Transformer fixture;
 
     @Before
     public void setUp() {
-        wifiConfigurations = Arrays.asList(wifiConfiguration1, wifiConfiguration2, wifiConfiguration3);
         fixture = new Transformer();
     }
 
     @Test
-    public void testTransformWithNulls() throws Exception {
+    public void testTransformWithNulls() {
         assertTrue(fixture.transformCacheResults(null).isEmpty());
         assertEquals(WiFiConnection.EMPTY, fixture.transformWifiInfo(null));
-        assertTrue(fixture.transformWifiConfigurations(null).isEmpty());
     }
 
     @Test
-    public void testTransformWifiInfoNotConnected() throws Exception {
+    public void testTransformWifiInfoNotConnected() {
         when(wifiInfo.getNetworkId()).thenReturn(-1);
         assertEquals(WiFiConnection.EMPTY, fixture.transformWifiInfo(wifiInfo));
         verify(wifiInfo).getNetworkId();
     }
 
     @Test
-    public void testTransformWifiConfiguration() throws Exception {
-        // setup
-        withWiFiConfiguration();
-        // execute
-        List<String> actual = fixture.transformWifiConfigurations(wifiConfigurations);
-        // validate
-        assertEquals(wifiConfigurations.size(), actual.size());
-        assertEquals(SSID_1, actual.get(0));
-        assertEquals(SSID_2, actual.get(1));
-        assertEquals(SSID_3, actual.get(2));
-    }
-
-    @Test
-    public void testTransformScanResults() throws Exception {
+    public void testTransformScanResults() {
         // setup
         withCacheResults();
         // execute
@@ -134,22 +113,20 @@ public class TransformerTest {
     }
 
     @Test
-    public void testWiFiData() throws Exception {
+    public void testWiFiData() {
         // setup
-        WiFiConnection expectedWiFiConnection = new WiFiConnection(SSID_1, BSSID_1);
+        WiFiConnection expectedWiFiConnection = new WiFiConnection(SSID_1, BSSID_1, IP_ADDRESS, LINK_SPEED);
         withCacheResults();
-        withWiFiConfiguration();
         withWiFiInfo();
         // execute
-        WiFiData actual = fixture.transformToWiFiData(cacheResults, wifiInfo, wifiConfigurations);
+        WiFiData actual = fixture.transformToWiFiData(cacheResults, wifiInfo);
         // validate
         assertEquals(expectedWiFiConnection, actual.getWiFiConnection());
         assertEquals(cacheResults.size(), actual.getWiFiDetails().size());
-        assertEquals(wifiConfigurations.size(), actual.getWiFiConfigurations().size());
     }
 
     @Test
-    public void testGetWiFiWidth() throws Exception {
+    public void testGetWiFiWidth() {
         // execute
         WiFiWidth actual = fixture.getWiFiWidth(scanResult1);
         // validate
@@ -157,11 +134,11 @@ public class TransformerTest {
     }
 
     @Test
-    public void testGetWiFiWidthWithWiFiWidth() throws Exception {
+    public void testGetWiFiWidthWithWiFiWidth() {
         // setup
         fixture = new Transformer() {
             @Override
-            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) throws NoSuchFieldException, IllegalAccessException {
+            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) {
                 assertEquals(Fields.channelWidth, field);
                 return WiFiWidth.MHZ_160.ordinal();
             }
@@ -173,7 +150,7 @@ public class TransformerTest {
     }
 
     @Test
-    public void testGetCenterFrequency() throws Exception {
+    public void testGetCenterFrequency() {
         // setup
         scanResult1.frequency = FREQUENCY;
         // execute
@@ -183,12 +160,12 @@ public class TransformerTest {
     }
 
     @Test
-    public void testGetCenterFrequencyWithFrequency() throws Exception {
+    public void testGetCenterFrequencyWithFrequency() {
         // setup
         int expected = FREQUENCY + WiFiWidth.MHZ_20.getFrequencyWidthHalf();
         fixture = new Transformer() {
             @Override
-            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) throws NoSuchFieldException, IllegalAccessException {
+            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) {
                 assertEquals(Fields.centerFreq0, field);
                 return FREQUENCY + WiFiWidth.MHZ_20.getFrequencyWidthHalf();
             }
@@ -201,12 +178,12 @@ public class TransformerTest {
     }
 
     @Test
-    public void testGetCenterFrequencyWithExtFrequencyAfter() throws Exception {
+    public void testGetCenterFrequencyWithExtFrequencyAfter() {
         // setup
         int expected = FREQUENCY + WiFiWidth.MHZ_20.getFrequencyWidthHalf();
         fixture = new Transformer() {
             @Override
-            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) throws NoSuchFieldException, IllegalAccessException {
+            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) {
                 assertEquals(Fields.centerFreq0, field);
                 return FREQUENCY + WiFiWidth.MHZ_40.getFrequencyWidthHalf();
             }
@@ -219,12 +196,12 @@ public class TransformerTest {
     }
 
     @Test
-    public void testGetCenterFrequencyWithExtFrequencyBefore() throws Exception {
+    public void testGetCenterFrequencyWithExtFrequencyBefore() {
         // setup
         int expected = FREQUENCY - WiFiWidth.MHZ_20.getFrequencyWidthHalf();
         fixture = new Transformer() {
             @Override
-            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) throws NoSuchFieldException, IllegalAccessException {
+            int getFieldValue(@NonNull ScanResult scanResult, @NonNull Fields field) {
                 assertEquals(Fields.centerFreq0, field);
                 return FREQUENCY - WiFiWidth.MHZ_40.getFrequencyWidthHalf();
             }
@@ -237,7 +214,7 @@ public class TransformerTest {
     }
 
     @Test
-    public void testIsExtensionFrequencyWith2GHz() throws Exception {
+    public void testIsExtensionFrequencyWith2GHz() {
         // setup
         scanResult1.frequency = FREQUENCY;
         // execute & validate
@@ -249,7 +226,7 @@ public class TransformerTest {
     }
 
     @Test
-    public void testIsExtensionFrequencyWith5GHz() throws Exception {
+    public void testIsExtensionFrequencyWith5GHz() {
         // setup
         scanResult1.frequency = 5100;
         // execute & validate
@@ -261,7 +238,7 @@ public class TransformerTest {
     }
 
     @Test
-    public void testIsNotExtensionFrequency() throws Exception {
+    public void testIsNotExtensionFrequency() {
         // setup
         scanResult1.frequency = FREQUENCY;
         // execute & validate
@@ -296,17 +273,11 @@ public class TransformerTest {
             new CacheResult(scanResult3, scanResult2.level));
     }
 
-    private void withWiFiConfiguration() {
-        wifiConfiguration1.SSID = SSID_1;
-        wifiConfiguration2.SSID = SSID_2;
-        wifiConfiguration3.SSID = SSID_3;
-    }
-
     private void withWiFiInfo() {
         when(wifiInfo.getNetworkId()).thenReturn(0);
         when(wifiInfo.getSSID()).thenReturn(SSID_1);
         when(wifiInfo.getBSSID()).thenReturn(BSSID_1);
-        when(wifiInfo.getIpAddress()).thenReturn(IP_ADDRESS);
+        when(wifiInfo.getIpAddress()).thenReturn(IP_ADDRESS_VALUE);
         when(wifiInfo.getLinkSpeed()).thenReturn(LINK_SPEED);
     }
 

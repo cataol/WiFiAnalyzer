@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,31 +18,40 @@
 
 package com.vrem.wifianalyzer;
 
+import android.content.res.Configuration;
+import android.os.Build;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.vrem.wifianalyzer.menu.OptionMenu;
+import com.google.android.material.navigation.NavigationView;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
-import com.vrem.wifianalyzer.navigation.NavigationMenuView;
-import com.vrem.wifianalyzer.wifi.band.WiFiBand;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
+import com.vrem.wifianalyzer.navigation.NavigationMenuController;
+import com.vrem.wifianalyzer.navigation.options.OptionMenu;
+import com.vrem.wifianalyzer.permission.PermissionService;
+import com.vrem.wifianalyzer.settings.Settings;
+import com.vrem.wifianalyzer.wifi.scanner.ScannerService;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.mockito.Mockito.when;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class MainActivityTest {
 
     private MainActivity fixture;
@@ -58,58 +67,36 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testMainActivity() throws Exception {
-        assertTrue(MainContext.INSTANCE.getScanner().isRunning());
+    public void testMainActivity() {
+        assertTrue(MainContext.INSTANCE.getScannerService().isRunning());
     }
 
     @Test
-    public void testClickingOnToolbarTogglesWiFiBand() throws Exception {
+    public void testOnPauseWillPauseScanner() {
         // setup
-        NavigationMenuView navigationMenuView = fixture.getNavigationMenuView();
-        navigationMenuView.setCurrentNavigationMenu(NavigationMenu.CHANNEL_RATING);
-        // execute and validate
-        assertEquals(WiFiBand.GHZ2, MainContext.INSTANCE.getSettings().getWiFiBand());
-        fixture.findViewById(R.id.toolbar).performClick();
-        assertEquals(WiFiBand.GHZ5, MainContext.INSTANCE.getSettings().getWiFiBand());
-        fixture.findViewById(R.id.toolbar).performClick();
-        assertEquals(WiFiBand.GHZ2, MainContext.INSTANCE.getSettings().getWiFiBand());
-    }
-
-    @Test
-    public void testClickingOnToolbarDoesNotTogglesWiFiBand() throws Exception {
-        // setup
-        NavigationMenuView navigationMenuView = fixture.getNavigationMenuView();
-        navigationMenuView.setCurrentNavigationMenu(NavigationMenu.VENDOR_LIST);
-        // execute and validate
-        assertEquals(WiFiBand.GHZ2, MainContext.INSTANCE.getSettings().getWiFiBand());
-        fixture.findViewById(R.id.toolbar).performClick();
-        assertEquals(WiFiBand.GHZ2, MainContext.INSTANCE.getSettings().getWiFiBand());
-    }
-
-    @Test
-    public void testOnPauseCallsOptionMenuPause() throws Exception {
-        // setup
-        OptionMenu optionMenu = mock(OptionMenu.class);
-        fixture.setOptionMenu(optionMenu);
+        ScannerService scannerService = MainContextHelper.INSTANCE.getScannerService();
         // execute
         fixture.onPause();
         // validate
-        verify(optionMenu).pause();
+        verify(scannerService).pause();
     }
 
     @Test
-    public void testOnResumeCallsOptionMenuResume() throws Exception {
+    public void testOnResumeCallsOptionMenuResume() {
         // setup
-        OptionMenu optionMenu = mock(OptionMenu.class);
-        fixture.setOptionMenu(optionMenu);
+        PermissionService permissionService = mock(PermissionService.class);
+        fixture.setPermissionService(permissionService);
+        ScannerService scannerService = MainContextHelper.INSTANCE.getScannerService();
+        when(permissionService.isPermissionGranted()).thenReturn(true);
         // execute
         fixture.onResume();
         // validate
-        verify(optionMenu).resume();
+        verify(permissionService).isPermissionGranted();
+        verify(scannerService).resume();
     }
 
     @Test
-    public void testOnCreateOptionsMenu() throws Exception {
+    public void testOnCreateOptionsMenu() {
         // setup
         Menu menu = mock(Menu.class);
         OptionMenu optionMenu = mock(OptionMenu.class);
@@ -122,7 +109,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testOnOptionsItemSelected() throws Exception {
+    public void testOnOptionsItemSelected() {
         // setup
         MenuItem menuItem = mock(MenuItem.class);
         OptionMenu optionMenu = mock(OptionMenu.class);
@@ -135,17 +122,60 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testOnStop() throws Exception {
+    public void testOnConfigurationChanged() {
         // setup
-        Scanner scanner = MainContextHelper.INSTANCE.getScanner();
+        Configuration configuration = fixture.getResources().getConfiguration();
+        DrawerNavigation drawerNavigation = mock(DrawerNavigation.class);
+        fixture.setDrawerNavigation(drawerNavigation);
         // execute
-        fixture.onStop();
+        fixture.onConfigurationChanged(configuration);
         // validate
-        verify(scanner).setWiFiOnExit();
+        verify(drawerNavigation).onConfigurationChanged(configuration);
     }
 
     @Test
-    public void testOptionMenu() throws Exception {
+    public void testOnPostCreate() {
+        // setup
+        DrawerNavigation drawerNavigation = mock(DrawerNavigation.class);
+        fixture.setDrawerNavigation(drawerNavigation);
+        // execute
+        fixture.onPostCreate(null);
+        // validate
+        verify(drawerNavigation).syncState();
+    }
+
+    @Test
+    public void testOnStop() {
+        // setup
+        ScannerService scanner = MainContextHelper.INSTANCE.getScannerService();
+        // execute
+        fixture.onStop();
+        // validate
+        verify(scanner).stop();
+    }
+
+    @Test
+    public void testUpdateShouldUpdateScanner() {
+        // setup
+        ScannerService scanner = MainContextHelper.INSTANCE.getScannerService();
+        // execute
+        fixture.update();
+        // validate
+        verify(scanner).update();
+    }
+
+    @Test
+    public void testOnSharedPreferenceChangedShouldUpdateScanner() {
+        // setup
+        ScannerService scanner = MainContextHelper.INSTANCE.getScannerService();
+        // execute
+        fixture.onSharedPreferenceChanged(null, null);
+        // validate
+        verify(scanner).update();
+    }
+
+    @Test
+    public void testOptionMenu() {
         // setup
         OptionMenu optionMenu = fixture.getOptionMenu();
         // execute
@@ -153,6 +183,62 @@ public class MainActivityTest {
         // validate
         assertNotNull(actual.findItem(R.id.action_filter));
         assertNotNull(actual.findItem(R.id.action_scanner));
+    }
+
+    @Test
+    public void testGetCurrentMenuItem() {
+        // setup
+        MenuItem menuItem = mock(MenuItem.class);
+        NavigationMenuController navigationMenuController = mock(NavigationMenuController.class);
+        when(navigationMenuController.getCurrentMenuItem()).thenReturn(menuItem);
+        fixture.setNavigationMenuController(navigationMenuController);
+        // execute
+        MenuItem actual = fixture.getCurrentMenuItem();
+        // validate
+        assertEquals(menuItem, actual);
+        verify(navigationMenuController).getCurrentMenuItem();
+    }
+
+    @Test
+    public void testGetCurrentNavigationMenu() {
+        // setup
+        NavigationMenu navigationMenu = NavigationMenu.CHANNEL_GRAPH;
+        NavigationMenuController navigationMenuController = mock(NavigationMenuController.class);
+        when(navigationMenuController.getCurrentNavigationMenu()).thenReturn(navigationMenu);
+        fixture.setNavigationMenuController(navigationMenuController);
+        // execute
+        NavigationMenu actual = fixture.getCurrentNavigationMenu();
+        // validate
+        assertEquals(navigationMenu, actual);
+        verify(navigationMenuController).getCurrentNavigationMenu();
+    }
+
+    @Test
+    public void testSetCurrentNavigationMenu() {
+        // setup
+        NavigationMenu navigationMenu = NavigationMenu.CHANNEL_GRAPH;
+        Settings settings = MainContextHelper.INSTANCE.getSettings();
+        NavigationMenuController navigationMenuController = mock(NavigationMenuController.class);
+        fixture.setNavigationMenuController(navigationMenuController);
+        // execute
+        fixture.setCurrentNavigationMenu(navigationMenu);
+        // validate
+        verify(navigationMenuController).setCurrentNavigationMenu(navigationMenu);
+        verify(settings).saveSelectedMenu(navigationMenu);
+    }
+
+    @Test
+    public void testGetNavigationView() {
+        // setup
+        NavigationMenuController navigationMenuController = mock(NavigationMenuController.class);
+        NavigationView navigationView = mock(NavigationView.class);
+        when(navigationMenuController.getNavigationView()).thenReturn(navigationView);
+        fixture.setNavigationMenuController(navigationMenuController);
+        // execute
+        NavigationView actual = fixture.getNavigationView();
+        // validate
+        assertEquals(navigationView, actual);
+        verify(navigationMenuController).getNavigationView();
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,14 +44,14 @@ public class WiFiChannelCountryGHZ2Test {
     }
 
     @Test
-    public void testChannelsForUSAndSimilar() throws Exception {
-        List<String> countries = Arrays.asList("AS", "AU", "CA", "FM", "GU", "MP", "PA", "PR", "UM", "US", "VI");
+    public void testChannelsForUSAndSimilar() {
+        List<String> countries = Arrays.asList("AS", "CA", "CO", "DO", "FM", "GT", "GU", "MP", "MX", "PA", "PR", "UM", "US", "UZ", "VI");
         IterableUtils.forEach(countries, new ChannelUSClosure());
     }
 
     @Test
-    public void testChannelsForWorld() throws Exception {
-        List<String> countries = Arrays.asList(null, "GB", "XYZ", "MX", "AE");
+    public void testChannelsForWorld() {
+        List<String> countries = Arrays.asList(null, "GB", "XYZ", "AU", "AE");
         IterableUtils.forEach(countries, new ChannelWorldClosure());
     }
 

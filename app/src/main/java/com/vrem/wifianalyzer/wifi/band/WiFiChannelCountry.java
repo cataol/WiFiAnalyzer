@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.vrem.wifianalyzer.wifi.band;
 
-import android.support.annotation.NonNull;
+import com.vrem.util.LocaleUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Transformer;
@@ -29,10 +29,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 
-public class WiFiChannelCountry {
-    public static final String UNKNOWN = "-Unknown";
+import androidx.annotation.NonNull;
 
-    private static final Country COUNTRY = new Country();
+public class WiFiChannelCountry {
+    private static final String UNKNOWN = "-Unknown";
+
     private static final WiFiChannelCountryGHZ2 WIFI_CHANNEL_GHZ2 = new WiFiChannelCountryGHZ2();
     private static final WiFiChannelCountryGHZ5 WIFI_CHANNEL_GHZ5 = new WiFiChannelCountryGHZ5();
 
@@ -42,12 +43,14 @@ public class WiFiChannelCountry {
         this.country = country;
     }
 
+    @NonNull
     public static WiFiChannelCountry get(@NonNull String countryCode) {
-        return new WiFiChannelCountry(COUNTRY.getCountry(countryCode));
+        return new WiFiChannelCountry(LocaleUtils.findByCountryCode(countryCode));
     }
 
+    @NonNull
     public static List<WiFiChannelCountry> getAll() {
-        return new ArrayList<>(CollectionUtils.collect(COUNTRY.getCountries(), new ToCountry()));
+        return new ArrayList<>(CollectionUtils.collect(LocaleUtils.getAllCountries(), new ToCountry()));
     }
 
     @NonNull
@@ -60,18 +63,20 @@ public class WiFiChannelCountry {
     }
 
     @NonNull
-    public String getCountryName() {
-        String countryName = country.getDisplayCountry();
+    public String getCountryName(Locale currentLocale) {
+        String countryName = country.getDisplayCountry(currentLocale);
         if (countryName == null) {
             countryName = StringUtils.EMPTY;
         }
         return country.getCountry().equals(countryName) ? countryName + UNKNOWN : countryName;
     }
 
+    @NonNull
     public SortedSet<Integer> getChannelsGHZ2() {
         return WIFI_CHANNEL_GHZ2.findChannels(country.getCountry());
     }
 
+    @NonNull
     public SortedSet<Integer> getChannelsGHZ5() {
         return WIFI_CHANNEL_GHZ5.findChannels(country.getCountry());
     }

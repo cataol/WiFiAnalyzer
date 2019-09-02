@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,14 +40,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,7 +77,7 @@ public class AccessPointsAdapterDataTest {
     }
 
     @Test
-    public void testBeforeUpdate() throws Exception {
+    public void testBeforeUpdate() {
         assertEquals(0, fixture.parentsCount());
         assertEquals(0, fixture.childrenCount(0));
         assertEquals(WiFiDetail.EMPTY, fixture.parent(0));
@@ -87,7 +87,7 @@ public class AccessPointsAdapterDataTest {
     }
 
     @Test
-    public void testAfterUpdateWithGroupByChannel() throws Exception {
+    public void testAfterUpdateWithGroupByChannel() {
         // setup
         List<WiFiDetail> wiFiDetails = withWiFiDetails();
         withSettings();
@@ -111,7 +111,7 @@ public class AccessPointsAdapterDataTest {
     }
 
     @Test
-    public void testOnGroupCollapsed() throws Exception {
+    public void testOnGroupCollapsed() {
         // setup
         int index = 11;
         List<WiFiDetail> wiFiDetails = fixture.getWiFiDetails();
@@ -122,7 +122,7 @@ public class AccessPointsAdapterDataTest {
     }
 
     @Test
-    public void testOnGroupExpanded() throws Exception {
+    public void testOnGroupExpanded() {
         // setup
         int index = 22;
         List<WiFiDetail> wiFiDetails = fixture.getWiFiDetails();
@@ -133,7 +133,8 @@ public class AccessPointsAdapterDataTest {
     }
 
     private WiFiDetail withWiFiDetail() {
-        WiFiDetail wiFiDetail = new WiFiDetail("SSID1", "BSSID1", StringUtils.EMPTY, new WiFiSignal(2255, 2255, WiFiWidth.MHZ_20, -40));
+        WiFiDetail wiFiDetail = new WiFiDetail("SSID1", "BSSID1", StringUtils.EMPTY,
+            new WiFiSignal(2255, 2255, WiFiWidth.MHZ_20, -40, true));
         wiFiDetail.addChild(new WiFiDetail("SSID1-1", "BSSID1-1", StringUtils.EMPTY, WiFiSignal.EMPTY));
         wiFiDetail.addChild(new WiFiDetail("SSID1-2", "BSSID1-2", StringUtils.EMPTY, WiFiSignal.EMPTY));
         wiFiDetail.addChild(new WiFiDetail("SSID1-3", "BSSID1-3", StringUtils.EMPTY, WiFiSignal.EMPTY));

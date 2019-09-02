@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,19 +21,19 @@ package com.vrem.wifianalyzer.wifi.filter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
+
+import androidx.annotation.NonNull;
 
 public class Filter {
 
     private final AlertDialog alertDialog;
 
-    private Filter(@NonNull AlertDialog alertDialog) {
+    private Filter(AlertDialog alertDialog) {
         this.alertDialog = alertDialog;
     }
 
@@ -42,13 +42,16 @@ public class Filter {
     }
 
     private static AlertDialog buildAlertDialog() {
-        MainActivity mainActivity = MainContext.INSTANCE.getMainActivity();
-        View view = mainActivity.getLayoutInflater().inflate(R.layout.filter_popup, null);
+        MainContext mainContext = MainContext.INSTANCE;
+        if (mainContext.getMainActivity().isFinishing()) {
+            return null;
+        }
+        View view = mainContext.getLayoutInflater().inflate(R.layout.filter_popup, null);
         return new AlertDialog
-            .Builder(mainActivity)
+            .Builder(view.getContext())
             .setView(view)
             .setTitle(R.string.filter_title)
-            .setIcon(R.drawable.ic_filter_list_grey_500_48dp)
+            .setIcon(R.drawable.ic_filter_list)
             .setNegativeButton(R.string.filter_reset, new Reset())
             .setNeutralButton(R.string.filter_close, new Close())
             .setPositiveButton(R.string.filter_apply, new Apply())
@@ -56,12 +59,12 @@ public class Filter {
     }
 
     public void show() {
-        if (!alertDialog.isShowing()) {
+        if (alertDialog != null && !alertDialog.isShowing()) {
             alertDialog.show();
-            addWiFiBandFilter();
-            addSSIDFilter();
-            addStrengthFilter();
-            addSecurityFilter();
+            addWiFiBandFilter(alertDialog);
+            addSSIDFilter(alertDialog);
+            addStrengthFilter(alertDialog);
+            addSecurityFilter(alertDialog);
         }
     }
 
@@ -69,21 +72,21 @@ public class Filter {
         return alertDialog;
     }
 
-    private void addSSIDFilter() {
+    private void addSSIDFilter(@NonNull AlertDialog alertDialog) {
         new SSIDFilter(MainContext.INSTANCE.getFilterAdapter().getSSIDAdapter(), alertDialog);
     }
 
-    private void addWiFiBandFilter() {
-        if (NavigationMenu.ACCESS_POINTS.equals(MainContext.INSTANCE.getMainActivity().getNavigationMenuView().getCurrentNavigationMenu())) {
+    private void addWiFiBandFilter(@NonNull AlertDialog alertDialog) {
+        if (NavigationMenu.ACCESS_POINTS.equals(MainContext.INSTANCE.getMainActivity().getCurrentNavigationMenu())) {
             new WiFiBandFilter(MainContext.INSTANCE.getFilterAdapter().getWiFiBandAdapter(), alertDialog);
         }
     }
 
-    private void addStrengthFilter() {
+    private void addStrengthFilter(@NonNull AlertDialog alertDialog) {
         new StrengthFilter(MainContext.INSTANCE.getFilterAdapter().getStrengthAdapter(), alertDialog);
     }
 
-    private void addSecurityFilter() {
+    private void addSecurityFilter(@NonNull AlertDialog alertDialog) {
         new SecurityFilter(MainContext.INSTANCE.getFilterAdapter().getSecurityAdapter(), alertDialog);
     }
 

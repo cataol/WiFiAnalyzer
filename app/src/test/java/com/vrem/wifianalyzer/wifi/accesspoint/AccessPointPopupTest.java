@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,9 @@
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
 import android.app.Dialog;
-import android.support.annotation.NonNull;
+import android.os.Build;
 import android.view.View;
 
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.RobolectricUtil;
@@ -34,19 +33,22 @@ import com.vrem.wifianalyzer.wifi.model.WiFiSignal;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class AccessPointPopupTest {
     private MainActivity mainActivity;
-
     private AccessPointPopup fixture;
 
     @Before
@@ -56,7 +58,7 @@ public class AccessPointPopupTest {
     }
 
     @Test
-    public void testShowOpensPopup() throws Exception {
+    public void testShowOpensPopup() {
         // setup
         View view = mainActivity.getLayoutInflater().inflate(R.layout.access_point_view_popup, null);
         // execute
@@ -67,7 +69,7 @@ public class AccessPointPopupTest {
     }
 
     @Test
-    public void testPopupIsClosedOnCloseButtonClick() throws Exception {
+    public void testPopupIsClosedOnCloseButtonClick() {
         // setup
         View view = mainActivity.getLayoutInflater().inflate(R.layout.access_point_view_popup, null);
         Dialog dialog = fixture.show(view);
@@ -79,7 +81,7 @@ public class AccessPointPopupTest {
     }
 
     @Test
-    public void testAttach() throws Exception {
+    public void testAttach() {
         // setup
         WiFiDetail wiFiDetail = withWiFiDetail();
         View view = mainActivity.getLayoutInflater().inflate(R.layout.access_point_view_compact, null);
@@ -91,7 +93,9 @@ public class AccessPointPopupTest {
 
     @NonNull
     private WiFiDetail withWiFiDetail() {
-        return new WiFiDetail("SSID", "BSSID", "capabilities", new WiFiSignal(1, 1, WiFiWidth.MHZ_40, 2), WiFiAdditional.EMPTY);
+        return new WiFiDetail("SSID", "BSSID", "capabilities",
+            new WiFiSignal(1, 1, WiFiWidth.MHZ_40, 2, true),
+            WiFiAdditional.EMPTY);
     }
 
 }

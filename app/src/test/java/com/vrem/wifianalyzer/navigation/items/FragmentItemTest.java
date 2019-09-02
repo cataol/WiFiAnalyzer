@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,26 @@
 
 package com.vrem.wifianalyzer.navigation.items;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
-import com.vrem.wifianalyzer.navigation.NavigationMenuView;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,56 +51,97 @@ public class FragmentItemTest {
     @Mock
     private MenuItem menuItem;
     @Mock
-    private NavigationMenuView navigationMenuView;
-    @Mock
     private FragmentManager fragmentManager;
     @Mock
     private FragmentTransaction fragmentTransaction;
 
     @Test
-    public void testActivate() throws Exception {
+    public void testActivateWithStateSaved() {
         // setup
-        FragmentItem fixture = new FragmentItem(fragment);
+        FragmentItem fixture = new FragmentItem(fragment, true);
         String title = "title";
         NavigationMenu navigationMenu = NavigationMenu.ACCESS_POINTS;
+        when(mainActivity.getSupportFragmentManager()).thenReturn(fragmentManager);
+        when(fragmentManager.isStateSaved()).thenReturn(true);
+        // execute
+        fixture.activate(mainActivity, menuItem, navigationMenu);
+        // validate
+        verify(mainActivity).getSupportFragmentManager();
+        verify(fragmentManager).isStateSaved();
+        verifyFragmentManagerIsNotCalled();
+        verifyNoChangesToMainActivity(title, navigationMenu);
+    }
+
+    @Test
+    public void testActivateWithStateNotSaved() {
+        // setup
+        FragmentItem fixture = new FragmentItem(fragment, true);
+        String title = "title";
+        NavigationMenu navigationMenu = NavigationMenu.ACCESS_POINTS;
+        when(mainActivity.getSupportFragmentManager()).thenReturn(fragmentManager);
+        when(fragmentManager.isStateSaved()).thenReturn(false);
         withFragmentTransaction();
-        when(mainActivity.getNavigationMenuView()).thenReturn(navigationMenuView);
         when(menuItem.getTitle()).thenReturn(title);
         // execute
         fixture.activate(mainActivity, menuItem, navigationMenu);
         // validate
-        verifyFragmentTransaction();
-        verify(navigationMenuView).setCurrentNavigationMenu(navigationMenu);
-        verify(mainActivity).setTitle(title);
-        verify(mainActivity).updateActionBar();
+        verify(mainActivity).getSupportFragmentManager();
+        verify(fragmentManager).isStateSaved();
+        verifyFragmentManager();
+        verifyMainActivityChanges(title, navigationMenu);
     }
 
     @Test
-    public void testIsRegisteredFalse() throws Exception {
+    public void testIsRegisteredFalse() {
         // setup
-        FragmentItem fixture = new FragmentItem(fragment);
+        FragmentItem fixture = new FragmentItem(fragment, false);
         // execute & validate
         assertFalse(fixture.isRegistered());
     }
 
     @Test
-    public void testIsRegisteredTrue() throws Exception {
+    public void testIsRegisteredTrue() {
         // setup
         FragmentItem fixture = new FragmentItem(fragment, true);
         // execute & validate
         assertTrue(fixture.isRegistered());
     }
 
+    @Test
+    public void testGetV() {
+        // setup
+        FragmentItem fixture = new FragmentItem(fragment, false, View.INVISIBLE);
+        // execute & validate
+        assertEquals(View.INVISIBLE, fixture.getVisibility());
+    }
+
     private void withFragmentTransaction() {
-        when(mainActivity.getSupportFragmentManager()).thenReturn(fragmentManager);
         when(fragmentManager.beginTransaction()).thenReturn(fragmentTransaction);
         when(fragmentTransaction.replace(R.id.main_fragment, fragment)).thenReturn(fragmentTransaction);
     }
 
-    private void verifyFragmentTransaction() {
-        verify(mainActivity).getSupportFragmentManager();
+    private void verifyFragmentManager() {
         verify(fragmentManager).beginTransaction();
         verify(fragmentTransaction).replace(R.id.main_fragment, fragment);
         verify(fragmentTransaction).commit();
     }
+
+    private void verifyMainActivityChanges(String title, NavigationMenu navigationMenu) {
+        verify(mainActivity).setCurrentNavigationMenu(navigationMenu);
+        verify(mainActivity).setTitle(title);
+        verify(mainActivity).updateActionBar();
+    }
+
+    private void verifyFragmentManagerIsNotCalled() {
+        verify(fragmentManager, never()).beginTransaction();
+        verify(fragmentTransaction, never()).replace(R.id.main_fragment, fragment);
+        verify(fragmentTransaction, never()).commit();
+    }
+
+    private void verifyNoChangesToMainActivity(String title, NavigationMenu navigationMenu) {
+        verify(mainActivity, never()).setCurrentNavigationMenu(navigationMenu);
+        verify(mainActivity, never()).setTitle(title);
+        verify(mainActivity, never()).updateActionBar();
+    }
+
 }

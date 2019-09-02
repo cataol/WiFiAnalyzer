@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.wifi.band.WiFiWidth;
 import com.vrem.wifianalyzer.wifi.model.GroupBy;
-import com.vrem.wifianalyzer.wifi.model.WiFiData;
 import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 import com.vrem.wifianalyzer.wifi.model.WiFiSignal;
 
@@ -35,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +48,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AccessPointsAdapterGroupTest {
-    @Mock
-    private WiFiData wiFiData;
     @Mock
     private ExpandableListView expandableListView;
     @Mock
@@ -71,14 +68,14 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testBeforeUpdate() throws Exception {
+    public void testBeforeUpdate() {
         assertNull(fixture.getGroupBy());
         assertTrue(fixture.getExpanded().isEmpty());
         assertFalse(fixture.isGroupExpandable());
     }
 
     @Test
-    public void testAfterUpdateWithGroupByChannel() throws Exception {
+    public void testAfterUpdateWithGroupByChannel() {
         // setup
         List<WiFiDetail> wiFiDetails = withWiFiDetails();
         when(settings.getGroupBy()).thenReturn(GroupBy.CHANNEL);
@@ -95,7 +92,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testUpdateGroupBy() throws Exception {
+    public void testUpdateGroupBy() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         // execute
@@ -106,7 +103,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testUpdateGroupByWillClearExpandedWhenGroupByIsChanged() throws Exception {
+    public void testUpdateGroupByWillClearExpandedWhenGroupByIsChanged() {
         // setup
         fixture.getExpanded().add("TEST");
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
@@ -119,7 +116,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testUpdateGroupByWillNotClearExpandedWhenGroupByIsSame() throws Exception {
+    public void testUpdateGroupByWillNotClearExpandedWhenGroupByIsSame() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         fixture.updateGroupBy();
@@ -131,7 +128,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testIsGroupExpandableWithGroupBySSID() throws Exception {
+    public void testIsGroupExpandableWithGroupBySSID() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         // execute
@@ -141,7 +138,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testIsGroupExpandableWithGroupByChannel() throws Exception {
+    public void testIsGroupExpandableWithGroupByChannel() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.CHANNEL);
         // execute
@@ -151,7 +148,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testIsGroupExpandableWithGroupByNone() throws Exception {
+    public void testIsGroupExpandableWithGroupByNone() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.NONE);
         // execute
@@ -161,7 +158,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testGetGroupExpandKeyWithGroupBySSID() throws Exception {
+    public void testGetGroupExpandKeyWithGroupBySSID() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         fixture.updateGroupBy();
@@ -173,7 +170,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testGetGroupExpandKeyWithGroupByChannel() throws Exception {
+    public void testGetGroupExpandKeyWithGroupByChannel() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.CHANNEL);
         fixture.updateGroupBy();
@@ -185,7 +182,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testGetGroupExpandKeyWithGroupByNone() throws Exception {
+    public void testGetGroupExpandKeyWithGroupByNone() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.NONE);
         fixture.updateGroupBy();
@@ -197,7 +194,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testOnGroupExpanded() throws Exception {
+    public void testOnGroupExpanded() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         fixture.updateGroupBy();
@@ -209,7 +206,7 @@ public class AccessPointsAdapterGroupTest {
     }
 
     @Test
-    public void testOnGroupCollapsed() throws Exception {
+    public void testOnGroupCollapsed() {
         // setup
         when(settings.getGroupBy()).thenReturn(GroupBy.SSID);
         fixture.updateGroupBy();
@@ -222,7 +219,8 @@ public class AccessPointsAdapterGroupTest {
     }
 
     private WiFiDetail withWiFiDetail() {
-        WiFiDetail wiFiDetail = new WiFiDetail("SSID1", "BSSID1", StringUtils.EMPTY, new WiFiSignal(2255, 2255, WiFiWidth.MHZ_20, -40));
+        WiFiDetail wiFiDetail = new WiFiDetail("SSID1", "BSSID1", StringUtils.EMPTY,
+            new WiFiSignal(2255, 2255, WiFiWidth.MHZ_20, -40, true));
         wiFiDetail.addChild(new WiFiDetail("SSID1-1", "BSSID1-1", StringUtils.EMPTY, WiFiSignal.EMPTY));
         wiFiDetail.addChild(new WiFiDetail("SSID1-2", "BSSID1-2", StringUtils.EMPTY, WiFiSignal.EMPTY));
         wiFiDetail.addChild(new WiFiDetail("SSID1-3", "BSSID1-3", StringUtils.EMPTY, WiFiSignal.EMPTY));

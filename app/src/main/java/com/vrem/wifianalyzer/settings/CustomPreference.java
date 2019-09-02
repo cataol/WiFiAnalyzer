@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 package com.vrem.wifianalyzer.settings;
 
 import android.content.Context;
-import android.preference.ListPreference;
-import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,6 +26,9 @@ import org.apache.commons.collections4.Transformer;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.preference.ListPreference;
 
 class CustomPreference extends ListPreference {
     CustomPreference(@NonNull Context context, AttributeSet attrs, @NonNull List<Data> data, @NonNull String defaultValue) {

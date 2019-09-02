@@ -2,16 +2,18 @@ sudo: false
 cache: false
 language: android
 jdk: oraclejdk8
+dist : trusty
 android:
     components:
         - tools
-        - build-tools-25.0.3
-        - android-25
+        - build-tools-29.0.2
+        - android-29
         - extra-google-m2repository
         - extra-android-m2repository
 script:
-    - TERM=dumb ./gradlew testDebugUnitTest jacocoTestDebugUnitTestReport --info -PdisablePreDex --stacktrace
+    - TERM=dumb ./gradlew lint testDebugUnitTest jacocoTestReport
 before_install:
     - chmod +x gradlew
+    - yes | sdkmanager "platforms;android-29"
 after_success:
     - bash <(curl -s https://codecov.io/bash)

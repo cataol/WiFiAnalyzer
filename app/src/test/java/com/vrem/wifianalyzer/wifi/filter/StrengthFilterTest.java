@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNotNull;
 public class StrengthFilterTest {
 
     @Test
-    public void testMapping() throws Exception {
+    public void testMapping() {
         Set<Strength> strengths = EnumUtils.values(Strength.class);
         assertEquals(strengths.size(), StrengthFilter.ids.size());
         IterableUtils.forEach(strengths, new MappingClosure());

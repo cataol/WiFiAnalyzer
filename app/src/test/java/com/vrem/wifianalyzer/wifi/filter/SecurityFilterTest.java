@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNotNull;
 public class SecurityFilterTest {
 
     @Test
-    public void testMapping() throws Exception {
+    public void testMapping() {
         Set<Security> securities = EnumUtils.values(Security.class);
         assertEquals(securities.size(), SecurityFilter.ids.size());
         IterableUtils.forEach(securities, new MappingClosure());

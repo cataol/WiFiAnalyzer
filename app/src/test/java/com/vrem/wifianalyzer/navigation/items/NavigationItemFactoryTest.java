@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
 
 package com.vrem.wifianalyzer.navigation.items;
 
-import com.vrem.wifianalyzer.about.AboutActivity;
-import com.vrem.wifianalyzer.settings.SettingActivity;
+import android.view.View;
+
+import com.vrem.wifianalyzer.about.AboutFragment;
+import com.vrem.wifianalyzer.settings.SettingsFragment;
 import com.vrem.wifianalyzer.vendor.VendorFragment;
 import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointsFragment;
 import com.vrem.wifianalyzer.wifi.channelavailable.ChannelAvailableFragment;
@@ -36,17 +38,19 @@ import static org.junit.Assert.assertTrue;
 public class NavigationItemFactoryTest {
 
     @Test
-    public void testFragmentItem() throws Exception {
+    public void testFragmentItem() {
         assertTrue(((FragmentItem) NavigationItemFactory.ACCESS_POINTS).getFragment() instanceof AccessPointsFragment);
         assertTrue(((FragmentItem) NavigationItemFactory.CHANNEL_RATING).getFragment() instanceof ChannelRatingFragment);
         assertTrue(((FragmentItem) NavigationItemFactory.CHANNEL_GRAPH).getFragment() instanceof ChannelGraphFragment);
         assertTrue(((FragmentItem) NavigationItemFactory.TIME_GRAPH).getFragment() instanceof TimeGraphFragment);
         assertTrue(((FragmentItem) NavigationItemFactory.CHANNEL_AVAILABLE).getFragment() instanceof ChannelAvailableFragment);
-        assertTrue(((FragmentItem) NavigationItemFactory.VENDOR_LIST).getFragment() instanceof VendorFragment);
+        assertTrue(((FragmentItem) NavigationItemFactory.VENDORS).getFragment() instanceof VendorFragment);
+        assertTrue(((FragmentItem) NavigationItemFactory.SETTINGS).getFragment() instanceof SettingsFragment);
+        assertTrue(((FragmentItem) NavigationItemFactory.ABOUT).getFragment() instanceof AboutFragment);
     }
 
     @Test
-    public void testIsRegisteredTrue() throws Exception {
+    public void testIsRegisteredTrue() {
         assertTrue(NavigationItemFactory.ACCESS_POINTS.isRegistered());
         assertTrue(NavigationItemFactory.CHANNEL_RATING.isRegistered());
         assertTrue(NavigationItemFactory.CHANNEL_GRAPH.isRegistered());
@@ -54,22 +58,29 @@ public class NavigationItemFactoryTest {
     }
 
     @Test
-    public void testIsRegisteredFalse() throws Exception {
+    public void testIsRegisteredFalse() {
         assertFalse(NavigationItemFactory.EXPORT.isRegistered());
         assertFalse(NavigationItemFactory.CHANNEL_AVAILABLE.isRegistered());
-        assertFalse(NavigationItemFactory.VENDOR_LIST.isRegistered());
+        assertFalse(NavigationItemFactory.VENDORS.isRegistered());
         assertFalse(NavigationItemFactory.SETTINGS.isRegistered());
         assertFalse(NavigationItemFactory.ABOUT.isRegistered());
     }
 
     @Test
-    public void testActivityItem() throws Exception {
-        assertEquals(SettingActivity.class, ((ActivityItem) NavigationItemFactory.SETTINGS).getActivity());
-        assertEquals(AboutActivity.class, ((ActivityItem) NavigationItemFactory.ABOUT).getActivity());
+    public void testGetVisibility() {
+        assertEquals(View.VISIBLE, NavigationItemFactory.ACCESS_POINTS.getVisibility());
+        assertEquals(View.VISIBLE, NavigationItemFactory.CHANNEL_RATING.getVisibility());
+        assertEquals(View.VISIBLE, NavigationItemFactory.CHANNEL_GRAPH.getVisibility());
+        assertEquals(View.VISIBLE, NavigationItemFactory.TIME_GRAPH.getVisibility());
+        assertEquals(View.VISIBLE, NavigationItemFactory.CHANNEL_AVAILABLE.getVisibility());
+        assertEquals(View.GONE, NavigationItemFactory.VENDORS.getVisibility());
+        assertEquals(View.GONE, NavigationItemFactory.EXPORT.getVisibility());
+        assertEquals(View.GONE, NavigationItemFactory.SETTINGS.getVisibility());
+        assertEquals(View.GONE, NavigationItemFactory.ABOUT.getVisibility());
     }
 
     @Test
-    public void testExportItem() throws Exception {
+    public void testExportItem() {
         assertTrue(NavigationItemFactory.EXPORT instanceof ExportItem);
     }
 

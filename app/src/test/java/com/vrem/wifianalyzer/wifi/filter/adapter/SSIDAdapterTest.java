@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,27 +54,27 @@ public class SSIDAdapterTest {
     }
 
     @Test
-    public void testGetValue() throws Exception {
+    public void testGetValue() {
         assertEquals(SSID_VALUES.size(), fixture.getValues().size());
         IterableUtils.forEach(SSID_VALUES, new ContainsClosure());
     }
 
     @Test
-    public void testIsActive() throws Exception {
+    public void testIsActive() {
         assertTrue(fixture.isActive());
     }
 
     @Test
-    public void testIsNotActiveWithEmptyValue() throws Exception {
+    public void testIsNotActiveWithEmptyValue() {
         // execute
-        fixture.setValues(Collections.<String>emptySet());
+        fixture.setValues(Collections.emptySet());
         // validate
         assertFalse(fixture.isActive());
         assertTrue(fixture.getValues().isEmpty());
     }
 
     @Test
-    public void testIsNotActiveWithReset() throws Exception {
+    public void testIsNotActiveWithReset() {
         // execute
         fixture.reset();
         // validate
@@ -83,11 +83,22 @@ public class SSIDAdapterTest {
     }
 
     @Test
-    public void testSave() throws Exception {
+    public void testSave() {
         // execute
         fixture.save(settings);
         // execute
         verify(settings).saveSSIDs(SSID_VALUES);
+    }
+
+    @Test
+    public void testSetValues() {
+        // setup
+        Set<String> expected = new HashSet<>(Arrays.asList("ABC", "EDF", "123"));
+        Set<String> values = new HashSet<>(Arrays.asList("", "ABC", "", "EDF", "  ", "123", ""));
+        // execute
+        fixture.setValues(values);
+        // execute
+        assertEquals(expected, fixture.getValues());
     }
 
     private class ContainsClosure implements Closure<String> {

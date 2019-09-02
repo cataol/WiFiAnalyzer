@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
-import android.support.annotation.NonNull;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.R;
@@ -37,10 +36,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import java.util.Collections;
+
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,9 +50,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class AccessPointsAdapterTest {
 
     private MainActivity mainActivity;
@@ -73,7 +77,7 @@ public class AccessPointsAdapterTest {
         expandableListView = mock(ExpandableListView.class);
         viewGroup = mock(ViewGroup.class);
 
-        fixture = new AccessPointsAdapter(mainActivity);
+        fixture = new AccessPointsAdapter();
         fixture.setAccessPointsAdapterData(accessPointsAdapterData);
         fixture.setAccessPointDetail(accessPointDetail);
         fixture.setAccessPointPopup(accessPointPopup);
@@ -86,7 +90,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroupViewWithNoChildren() throws Exception {
+    public void testGetGroupViewWithNoChildren() {
         // setup
         WiFiDetail wiFiDetail = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.parent(1)).thenReturn(wiFiDetail);
@@ -103,7 +107,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroupViewCompactAddsPopup() throws Exception {
+    public void testGetGroupViewCompactAddsPopup() {
         // setup
         WiFiDetail wiFiDetail = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.parent(1)).thenReturn(wiFiDetail);
@@ -122,7 +126,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroupViewWithChildren() throws Exception {
+    public void testGetGroupViewWithChildren() {
         // setup
         WiFiDetail wiFiDetail = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.parent(1)).thenReturn(wiFiDetail);
@@ -139,7 +143,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetChildView() throws Exception {
+    public void testGetChildView() {
         // setup
         WiFiDetail wiFiDetail = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.child(0, 0)).thenReturn(wiFiDetail);
@@ -154,7 +158,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetChildViewCompactAddsPopup() throws Exception {
+    public void testGetChildViewCompactAddsPopup() {
         // setup
         WiFiDetail wiFiDetail = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.child(0, 0)).thenReturn(wiFiDetail);
@@ -171,9 +175,9 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         // setup
-        WiFiData wiFiData = new WiFiData(Collections.<WiFiDetail>emptyList(), WiFiConnection.EMPTY, Collections.<String>emptyList());
+        WiFiData wiFiData = new WiFiData(Collections.emptyList(), WiFiConnection.EMPTY);
         // execute
         fixture.update(wiFiData);
         // validate
@@ -181,7 +185,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroupCount() throws Exception {
+    public void testGetGroupCount() {
         // setup
         int expected = 5;
         when(accessPointsAdapterData.parentsCount()).thenReturn(expected);
@@ -193,7 +197,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetChildrenCount() throws Exception {
+    public void testGetChildrenCount() {
         // setup
         int expected = 25;
         when(accessPointsAdapterData.childrenCount(1)).thenReturn(expected);
@@ -205,7 +209,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroup() throws Exception {
+    public void testGetGroup() {
         // setup
         WiFiDetail expected = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.parent(3)).thenReturn(expected);
@@ -217,7 +221,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetChild() throws Exception {
+    public void testGetChild() {
         // setup
         WiFiDetail expected = WiFiDetail.EMPTY;
         when(accessPointsAdapterData.child(1, 2)).thenReturn(expected);
@@ -229,27 +233,27 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testGetGroupId() throws Exception {
+    public void testGetGroupId() {
         assertEquals(22, fixture.getGroupId(22));
     }
 
     @Test
-    public void testGetChildId() throws Exception {
+    public void testGetChildId() {
         assertEquals(11, fixture.getChildId(1, 11));
     }
 
     @Test
-    public void testHasStableIds() throws Exception {
+    public void testHasStableIds() {
         assertTrue(fixture.hasStableIds());
     }
 
     @Test
-    public void testIsChildSelectable() throws Exception {
+    public void testIsChildSelectable() {
         assertTrue(fixture.isChildSelectable(0, 0));
     }
 
     @Test
-    public void testOnGroupCollapsed() throws Exception {
+    public void testOnGroupCollapsed() {
         // setup
         int index = 11;
         // execute
@@ -259,7 +263,7 @@ public class AccessPointsAdapterTest {
     }
 
     @Test
-    public void testOnGroupExpanded() throws Exception {
+    public void testOnGroupExpanded() {
         // setup
         int index = 22;
         // execute

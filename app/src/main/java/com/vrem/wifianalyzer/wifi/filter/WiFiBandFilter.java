@@ -1,7 +1,7 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
- *  
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,16 +19,17 @@
 package com.vrem.wifianalyzer.wifi.filter;
 
 import android.app.Dialog;
-import android.support.annotation.NonNull;
 
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
-import com.vrem.wifianalyzer.wifi.filter.adapter.EnumFilterAdapter;
+import com.vrem.wifianalyzer.wifi.filter.adapter.WiFiBandAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-class WiFiBandFilter extends EnumFilter<WiFiBand, EnumFilterAdapter<WiFiBand>> {
+import androidx.annotation.NonNull;
+
+class WiFiBandFilter extends EnumFilter<WiFiBand, WiFiBandAdapter> {
     static final Map<WiFiBand, Integer> ids = new HashMap<>();
 
     static {
@@ -36,7 +37,7 @@ class WiFiBandFilter extends EnumFilter<WiFiBand, EnumFilterAdapter<WiFiBand>> {
         ids.put(WiFiBand.GHZ5, R.id.filterWifiBand5);
     }
 
-    WiFiBandFilter(@NonNull EnumFilterAdapter<WiFiBand> filterAdapter, @NonNull Dialog dialog) {
-        super(ids, filterAdapter, dialog, R.id.filterWiFiBand);
+    WiFiBandFilter(@NonNull WiFiBandAdapter wiFiBandAdapter, @NonNull Dialog dialog) {
+        super(ids, wiFiBandAdapter, dialog, R.id.filterWiFiBand);
     }
 }

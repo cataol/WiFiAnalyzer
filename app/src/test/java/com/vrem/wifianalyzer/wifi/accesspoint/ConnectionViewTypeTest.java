@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,19 +27,19 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionViewTypeTest {
     @Test
-    public void testConnectionViewTypeCount() throws Exception {
+    public void testConnectionViewTypeCount() {
         assertEquals(3, ConnectionViewType.values().length);
     }
 
     @Test
-    public void testGetLayout() throws Exception {
+    public void testGetLayout() {
         assertEquals(AccessPointViewType.COMPLETE, ConnectionViewType.COMPLETE.getAccessPointViewType());
         assertEquals(AccessPointViewType.COMPACT, ConnectionViewType.COMPACT.getAccessPointViewType());
         assertNull(ConnectionViewType.HIDE.getAccessPointViewType());
     }
 
     @Test
-    public void testIsHide() throws Exception {
+    public void testIsHide() {
         assertFalse(ConnectionViewType.COMPLETE.isHide());
         assertFalse(ConnectionViewType.COMPACT.isHide());
         assertTrue(ConnectionViewType.HIDE.isHide());

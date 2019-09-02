@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 package com.vrem.wifianalyzer.wifi.channelavailable;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +29,10 @@ import com.vrem.wifianalyzer.wifi.band.WiFiChannelCountry;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
 
 public class ChannelAvailableFragment extends ListFragment {
     private ChannelAvailableAdapter channelAvailableAdapter;
@@ -51,6 +53,7 @@ public class ChannelAvailableFragment extends ListFragment {
         channelAvailableAdapter.addAll(getChannelAvailable());
     }
 
+    @NonNull
     private List<WiFiChannelCountry> getChannelAvailable() {
         List<WiFiChannelCountry> results = new ArrayList<>();
         results.add(WiFiChannelCountry.get(MainContext.INSTANCE.getSettings().getCountryCode()));

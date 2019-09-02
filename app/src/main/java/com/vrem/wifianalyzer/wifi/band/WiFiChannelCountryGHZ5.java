@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.band;
 
-import android.support.annotation.NonNull;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -27,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import androidx.annotation.NonNull;
 
 class WiFiChannelCountryGHZ5 {
     private final SortedSet<Integer> channels;
@@ -56,6 +56,7 @@ class WiFiChannelCountryGHZ5 {
         channels.addAll(channelsSet3);
     }
 
+    @NonNull
     SortedSet<Integer> findChannels(@NonNull String countryCode) {
         SortedSet<Integer> results = new TreeSet<>(channels);
         SortedSet<Integer> exclude = channelsToExclude.get(StringUtils.capitalize(countryCode));

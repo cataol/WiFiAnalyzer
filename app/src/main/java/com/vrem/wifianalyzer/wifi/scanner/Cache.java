@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package com.vrem.wifianalyzer.wifi.scanner;
 
 import android.net.wifi.ScanResult;
-import android.support.annotation.NonNull;
+import android.net.wifi.WifiInfo;
 
 import com.vrem.wifianalyzer.MainContext;
 
@@ -34,10 +34,15 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 
-class Cache {
-    private static final int ADJUST = 10;
-    private final Deque<List<ScanResult>> cache = new ArrayDeque<>();
+import androidx.annotation.NonNull;
 
+class Cache {
+
+    private static final int ADJUST = 10;
+    private final Deque<List<ScanResult>> cachedScanResults = new ArrayDeque<>();
+    private WifiInfo cachedWifiInfo = null;
+
+    @NonNull
     List<CacheResult> getScanResults() {
         ScanResult current = null;
         int levelTotal = 0;
@@ -60,8 +65,12 @@ class Cache {
         return results;
     }
 
+    WifiInfo getWifiInfo() {
+        return cachedWifiInfo;
+    }
+
     @NonNull
-    private CacheResult getCacheResult(ScanResult current, int level, int count) {
+    private CacheResult getCacheResult(@NonNull ScanResult current, int level, int count) {
         CacheResult cacheResult;
         if (isSizeAvailable()) {
             cacheResult = new CacheResult(current, level / count);
@@ -71,37 +80,43 @@ class Cache {
         return cacheResult;
     }
 
+    @NonNull
     private List<ScanResult> combineCache() {
         List<ScanResult> scanResults = new ArrayList<>();
-        IterableUtils.forEach(cache, new CacheClosure(scanResults));
+        IterableUtils.forEach(cachedScanResults, new CacheClosure(scanResults));
         Collections.sort(scanResults, new ScanResultComparator());
         return scanResults;
     }
 
-    void add(List<ScanResult> scanResults) {
+    void add(@NonNull List<ScanResult> scanResults, WifiInfo wifiInfo) {
         int cacheSize = getCacheSize();
-        while (cache.size() >= cacheSize) {
-            cache.pollLast();
+        while (cachedScanResults.size() >= cacheSize) {
+            cachedScanResults.pollLast();
         }
-        if (scanResults != null) {
-            cache.addFirst(scanResults);
-        }
+        cachedScanResults.addFirst(scanResults);
+        cachedWifiInfo = wifiInfo;
     }
 
-    Deque<List<ScanResult>> getCache() {
-        return cache;
+    @NonNull
+    List<ScanResult> getFirst() {
+        return cachedScanResults.getFirst();
+    }
+
+    @NonNull
+    List<ScanResult> getLast() {
+        return cachedScanResults.getLast();
     }
 
     int getCacheSize() {
         if (isSizeAvailable()) {
-            int scanInterval = MainContext.INSTANCE.getSettings().getScanInterval();
-            if (scanInterval < 5) {
+            int scanSpeed = MainContext.INSTANCE.getSettings().getScanSpeed();
+            if (scanSpeed < 2) {
                 return 4;
             }
-            if (scanInterval < 10) {
+            if (scanSpeed < 5) {
                 return 3;
             }
-            if (scanInterval < 20) {
+            if (scanSpeed < 10) {
                 return 2;
             }
         }

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,14 @@
 
 package com.vrem.wifianalyzer.wifi.graphutils;
 
-import android.support.annotation.NonNull;
-
 import com.jjoe64.graphview.series.BaseSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.TitleLineGraphSeries;
 
-class SeriesOptions implements GraphConstants {
+import androidx.annotation.NonNull;
+
+class SeriesOptions {
     private GraphColors graphColors;
 
     SeriesOptions() {
@@ -37,11 +37,13 @@ class SeriesOptions implements GraphConstants {
     }
 
     void highlightConnected(@NonNull BaseSeries<DataPoint> series, boolean connected) {
+        int thickness = connected ? GraphConstants.THICKNESS_CONNECTED : GraphConstants.THICKNESS_REGULAR;
         if (series instanceof LineGraphSeries) {
-            ((LineGraphSeries<DataPoint>) series).setThickness(connected ? THICKNESS_CONNECTED : THICKNESS_REGULAR);
+            ((LineGraphSeries<DataPoint>) series).setThickness(thickness);
         } else if (series instanceof TitleLineGraphSeries) {
-            ((TitleLineGraphSeries<DataPoint>) series).setThickness(connected ? THICKNESS_CONNECTED : THICKNESS_REGULAR);
-            ((TitleLineGraphSeries<DataPoint>) series).setTextBold(connected);
+            TitleLineGraphSeries<DataPoint> titleLineGraphSeries = (TitleLineGraphSeries<DataPoint>) series;
+            titleLineGraphSeries.setThickness(thickness);
+            titleLineGraphSeries.setTextBold(connected);
         }
     }
 
@@ -58,6 +60,8 @@ class SeriesOptions implements GraphConstants {
     void drawBackground(@NonNull BaseSeries<DataPoint> series, boolean drawBackground) {
         if (series instanceof LineGraphSeries) {
             ((LineGraphSeries<DataPoint>) series).setDrawBackground(drawBackground);
+        } else if (series instanceof TitleLineGraphSeries) {
+            ((TitleLineGraphSeries<DataPoint>) series).setDrawBackground(drawBackground);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 
 package com.vrem.wifianalyzer.wifi.band;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.wifianalyzer.R;
+
+import androidx.annotation.NonNull;
 
 public enum WiFiBand {
     GHZ2(R.string.wifi_band_2ghz, new WiFiChannelsGHZ2()),
@@ -38,6 +38,7 @@ public enum WiFiBand {
         return textResource;
     }
 
+    @NonNull
     public WiFiBand toggle() {
         return isGHZ5() ? WiFiBand.GHZ2 : WiFiBand.GHZ5;
     }
@@ -46,6 +47,7 @@ public enum WiFiBand {
         return WiFiBand.GHZ5.equals(this);
     }
 
+    @NonNull
     public WiFiChannels getWiFiChannels() {
         return wiFiChannels;
     }

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.predicate;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.wifianalyzer.wifi.band.WiFiWidth;
 import com.vrem.wifianalyzer.wifi.model.Strength;
 import com.vrem.wifianalyzer.wifi.model.WiFiAdditional;
@@ -28,13 +26,15 @@ import com.vrem.wifianalyzer.wifi.model.WiFiSignal;
 
 import org.junit.Test;
 
+import androidx.annotation.NonNull;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StrengthPredicateTest {
 
     @Test
-    public void testStrengthPredicate() throws Exception {
+    public void testStrengthPredicate() {
         // setup
         WiFiDetail wiFiDetail = makeWiFiDetail(-60);
         // execute & validate
@@ -44,7 +44,7 @@ public class StrengthPredicateTest {
 
     @NonNull
     private WiFiDetail makeWiFiDetail(int level) {
-        WiFiSignal wiFiSignal = new WiFiSignal(2445, 2445, WiFiWidth.MHZ_20, level);
+        WiFiSignal wiFiSignal = new WiFiSignal(2445, 2445, WiFiWidth.MHZ_20, level, true);
         return new WiFiDetail("ssid", "bssid", "wpa", wiFiSignal, WiFiAdditional.EMPTY);
     }
 

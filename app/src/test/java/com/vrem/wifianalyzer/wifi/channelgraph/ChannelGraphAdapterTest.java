@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,32 +18,36 @@
 
 package com.vrem.wifianalyzer.wifi.channelgraph;
 
+import android.os.Build;
+
 import com.jjoe64.graphview.GraphView;
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.RobolectricUtil;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
 import com.vrem.wifianalyzer.wifi.graphutils.GraphViewNotifier;
 import com.vrem.wifianalyzer.wifi.model.WiFiConnection;
 import com.vrem.wifianalyzer.wifi.model.WiFiData;
-import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import java.util.Collections;
 import java.util.List;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class ChannelGraphAdapterTest {
 
     private ChannelGraphNavigation channelGraphNavigation;
@@ -64,7 +68,7 @@ public class ChannelGraphAdapterTest {
     }
 
     @Test
-    public void testGetGraphViewNotifiers() throws Exception {
+    public void testGetGraphViewNotifiers() {
         // setup
         int expected = expectedCount();
         // execute
@@ -82,7 +86,7 @@ public class ChannelGraphAdapterTest {
     }
 
     @Test
-    public void testGetGraphViews() throws Exception {
+    public void testGetGraphViews() {
         // setup
         int expected = expectedCount();
         // execute
@@ -92,9 +96,9 @@ public class ChannelGraphAdapterTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         // setup
-        WiFiData wiFiData = new WiFiData(Collections.<WiFiDetail>emptyList(), WiFiConnection.EMPTY, Collections.<String>emptyList());
+        WiFiData wiFiData = new WiFiData(Collections.emptyList(), WiFiConnection.EMPTY);
         // execute
         fixture.update(wiFiData);
         // validate

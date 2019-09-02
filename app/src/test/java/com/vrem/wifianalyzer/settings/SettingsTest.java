@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,10 @@
 
 package com.vrem.wifianalyzer.settings;
 
-import android.content.Context;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.Build;
-import android.os.LocaleList;
 
 import com.vrem.util.EnumUtils;
+import com.vrem.util.LocaleUtils;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.navigation.NavigationMenu;
 import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointViewType;
@@ -37,11 +33,12 @@ import com.vrem.wifianalyzer.wifi.model.Security;
 import com.vrem.wifianalyzer.wifi.model.SortBy;
 import com.vrem.wifianalyzer.wifi.model.Strength;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,8 +47,12 @@ import java.util.Locale;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -59,30 +60,29 @@ public class SettingsTest {
     @Mock
     private Repository repository;
     @Mock
-    private Context context;
-    @Mock
-    private Resources resources;
-    @Mock
-    private Configuration configuration;
-    @Mock
     private OnSharedPreferenceChangeListener onSharedPreferenceChangeListener;
 
     private Settings fixture;
 
     @Before
     public void setUp() {
-        fixture = new Settings(context);
-        fixture.setRepository(repository);
+        fixture = new Settings(repository);
+    }
+
+    @After
+    public void tearDown() {
+        verifyNoMoreInteractions(repository);
+        verifyNoMoreInteractions(onSharedPreferenceChangeListener);
     }
 
     @Test
-    public void testInitializeDefaultValues() throws Exception {
+    public void testInitializeDefaultValues() {
         fixture.initializeDefaultValues();
         verify(repository).initializeDefaultValues();
     }
 
     @Test
-    public void testRegisterOnSharedPreferenceChangeListener() throws Exception {
+    public void testRegisterOnSharedPreferenceChangeListener() {
         // execute
         fixture.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         // validate
@@ -90,77 +90,31 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetScanInterval() throws Exception {
+    public void testGetScanSpeed() {
         // setup
         int defaultValue = 10;
-        int expected = 11;
-        when(repository.getResourceInteger(R.integer.scan_interval_default)).thenReturn(defaultValue);
-        when(repository.getInteger(R.string.scan_interval_key, defaultValue)).thenReturn(expected);
+        int expected = 3;
+        when(repository.getStringAsInteger(R.string.scan_speed_default, Settings.SCAN_SPEED_DEFAULT)).thenReturn(defaultValue);
+        when(repository.getStringAsInteger(R.string.scan_speed_key, defaultValue)).thenReturn(expected);
         // execute
-        int actual = fixture.getScanInterval();
+        int actual = fixture.getScanSpeed();
         // validate
         assertEquals(expected, actual);
-        verify(repository).getResourceInteger(R.integer.scan_interval_default);
-        verify(repository).getInteger(R.string.scan_interval_key, defaultValue);
+        verify(repository).getStringAsInteger(R.string.scan_speed_default, Settings.SCAN_SPEED_DEFAULT);
+        verify(repository).getStringAsInteger(R.string.scan_speed_key, defaultValue);
     }
 
     @Test
-    public void testGetGroupBy() throws Exception {
-        // setup
-        when(repository.getStringAsInteger(R.string.group_by_key, GroupBy.NONE.ordinal())).thenReturn(GroupBy.CHANNEL.ordinal());
+    public void testIsWiFiThrottleDisabled() {
         // execute
-        GroupBy actual = fixture.getGroupBy();
+        boolean actual = fixture.isWiFiThrottleDisabled();
         // validate
-        assertEquals(GroupBy.CHANNEL, actual);
-        verify(repository).getStringAsInteger(R.string.group_by_key, GroupBy.NONE.ordinal());
+        assertFalse(actual);
     }
 
-    @Test
-    public void testGetSortBy() throws Exception {
-        // setup
-        when(repository.getStringAsInteger(R.string.sort_by_key, SortBy.STRENGTH.ordinal())).thenReturn(SortBy.SSID.ordinal());
-        // execute
-        SortBy actual = fixture.getSortBy();
-        // validate
-        assertEquals(SortBy.SSID, actual);
-        verify(repository).getStringAsInteger(R.string.sort_by_key, SortBy.STRENGTH.ordinal());
-    }
 
     @Test
-    public void testGetAccessPointView() throws Exception {
-        // setup
-        when(repository.getStringAsInteger(R.string.ap_view_key, AccessPointViewType.COMPLETE.ordinal())).thenReturn(AccessPointViewType.COMPACT.ordinal());
-        // execute
-        AccessPointViewType actual = fixture.getAccessPointView();
-        // validate
-        assertEquals(AccessPointViewType.COMPACT, actual);
-        verify(repository).getStringAsInteger(R.string.ap_view_key, AccessPointViewType.COMPLETE.ordinal());
-    }
-
-    @Test
-    public void testGetConnectionViewType() throws Exception {
-        // setup
-        when(repository.getStringAsInteger(R.string.connection_view_key, ConnectionViewType.COMPLETE.ordinal())).thenReturn(ConnectionViewType.COMPACT.ordinal());
-        // execute
-        ConnectionViewType actual = fixture.getConnectionViewType();
-        // validate
-        assertEquals(ConnectionViewType.COMPACT, actual);
-        verify(repository).getStringAsInteger(R.string.connection_view_key, ConnectionViewType.COMPLETE.ordinal());
-    }
-
-    @Test
-    public void testGetThemeStyle() throws Exception {
-        // setup
-        when(repository.getStringAsInteger(R.string.theme_key, ThemeStyle.DARK.ordinal())).thenReturn(ThemeStyle.LIGHT.ordinal());
-        // execute
-        ThemeStyle actual = fixture.getThemeStyle();
-        // validate
-        assertEquals(ThemeStyle.LIGHT, actual);
-        verify(repository).getStringAsInteger(R.string.theme_key, ThemeStyle.DARK.ordinal());
-    }
-
-    @Test
-    public void testGetGraphMaximumY() throws Exception {
+    public void testGetGraphMaximumY() {
         // setup
         int defaultValue = 1;
         int value = 2;
@@ -176,7 +130,62 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetChannelGraphLegend() throws Exception {
+    public void testGetGroupBy() {
+        // setup
+        when(repository.getStringAsInteger(R.string.group_by_key, GroupBy.NONE.ordinal())).thenReturn(GroupBy.CHANNEL.ordinal());
+        // execute
+        GroupBy actual = fixture.getGroupBy();
+        // validate
+        assertEquals(GroupBy.CHANNEL, actual);
+        verify(repository).getStringAsInteger(R.string.group_by_key, GroupBy.NONE.ordinal());
+    }
+
+    @Test
+    public void testGetSortBy() {
+        // setup
+        when(repository.getStringAsInteger(R.string.sort_by_key, SortBy.STRENGTH.ordinal())).thenReturn(SortBy.SSID.ordinal());
+        // execute
+        SortBy actual = fixture.getSortBy();
+        // validate
+        assertEquals(SortBy.SSID, actual);
+        verify(repository).getStringAsInteger(R.string.sort_by_key, SortBy.STRENGTH.ordinal());
+    }
+
+    @Test
+    public void testGetAccessPointView() {
+        // setup
+        when(repository.getStringAsInteger(R.string.ap_view_key, AccessPointViewType.COMPLETE.ordinal())).thenReturn(AccessPointViewType.COMPACT.ordinal());
+        // execute
+        AccessPointViewType actual = fixture.getAccessPointView();
+        // validate
+        assertEquals(AccessPointViewType.COMPACT, actual);
+        verify(repository).getStringAsInteger(R.string.ap_view_key, AccessPointViewType.COMPLETE.ordinal());
+    }
+
+    @Test
+    public void testGetConnectionViewType() {
+        // setup
+        when(repository.getStringAsInteger(R.string.connection_view_key, ConnectionViewType.COMPLETE.ordinal())).thenReturn(ConnectionViewType.COMPACT.ordinal());
+        // execute
+        ConnectionViewType actual = fixture.getConnectionViewType();
+        // validate
+        assertEquals(ConnectionViewType.COMPACT, actual);
+        verify(repository).getStringAsInteger(R.string.connection_view_key, ConnectionViewType.COMPLETE.ordinal());
+    }
+
+    @Test
+    public void testGetThemeStyle() {
+        // setup
+        when(repository.getStringAsInteger(R.string.theme_key, ThemeStyle.DARK.ordinal())).thenReturn(ThemeStyle.LIGHT.ordinal());
+        // execute
+        ThemeStyle actual = fixture.getThemeStyle();
+        // validate
+        assertEquals(ThemeStyle.LIGHT, actual);
+        verify(repository).getStringAsInteger(R.string.theme_key, ThemeStyle.DARK.ordinal());
+    }
+
+    @Test
+    public void testGetChannelGraphLegend() {
         // setup
         when(repository.getStringAsInteger(R.string.channel_graph_legend_key, GraphLegend.HIDE.ordinal())).thenReturn(GraphLegend.RIGHT.ordinal());
         // execute
@@ -187,7 +196,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetTimeGraphLegend() throws Exception {
+    public void testGetTimeGraphLegend() {
         // setup
         when(repository.getStringAsInteger(R.string.time_graph_legend_key, GraphLegend.LEFT.ordinal())).thenReturn(GraphLegend.RIGHT.ordinal());
         // execute
@@ -198,7 +207,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetWiFiBand() throws Exception {
+    public void testGetWiFiBand() {
         // setup
         when(repository.getStringAsInteger(R.string.wifi_band_key, WiFiBand.GHZ2.ordinal())).thenReturn(WiFiBand.GHZ5.ordinal());
         // execute
@@ -209,19 +218,19 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetSSIDFilter() throws Exception {
+    public void testGetSSIDFilter() {
         // setup
         Set<String> expected = new HashSet<>(Arrays.asList("value1", "value2", "value3"));
-        when(repository.getStringSet(R.string.filter_ssid_key, Collections.<String>emptySet())).thenReturn(expected);
+        when(repository.getStringSet(R.string.filter_ssid_key, Collections.emptySet())).thenReturn(expected);
         // execute
         Set<String> actual = fixture.getSSIDs();
         // validate
         assertEquals(expected, actual);
-        verify(repository).getStringSet(R.string.filter_ssid_key, Collections.<String>emptySet());
+        verify(repository).getStringSet(R.string.filter_ssid_key, Collections.emptySet());
     }
 
     @Test
-    public void testSaveSSIDFilter() throws Exception {
+    public void testSaveSSIDFilter() {
         // setup
         Set<String> values = new HashSet<>(Arrays.asList("value1", "value2", "value3"));
         // execute
@@ -231,7 +240,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetWiFiBandFilter() throws Exception {
+    public void testGetWiFiBandFilter() {
         // setup
         WiFiBand expected = WiFiBand.GHZ5;
         Set<String> values = Collections.singleton("" + expected.ordinal());
@@ -246,7 +255,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testSaveWiFiBandFilter() throws Exception {
+    public void testSaveWiFiBandFilter() {
         // setup
         Set<WiFiBand> values = Collections.singleton(WiFiBand.GHZ5);
         Set<String> expected = Collections.singleton("" + WiFiBand.GHZ5.ordinal());
@@ -257,7 +266,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetStrengthFilter() throws Exception {
+    public void testGetStrengthFilter() {
         // setup
         Strength expected = Strength.THREE;
         Set<String> values = Collections.singleton("" + expected.ordinal());
@@ -272,7 +281,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testSaveStrengthFilter() throws Exception {
+    public void testSaveStrengthFilter() {
         // setup
         Set<Strength> values = Collections.singleton(Strength.TWO);
         Set<String> expected = Collections.singleton("" + Strength.TWO.ordinal());
@@ -283,7 +292,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetSecurityFilter() throws Exception {
+    public void testGetSecurityFilter() {
         // setup
         Security expected = Security.WPA;
         Set<String> values = Collections.singleton("" + expected.ordinal());
@@ -298,7 +307,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testSaveSecurityFilter() throws Exception {
+    public void testSaveSecurityFilter() {
         // setup
         Set<Security> values = Collections.singleton(Security.WEP);
         Set<String> expected = Collections.singleton("" + Security.WEP.ordinal());
@@ -309,7 +318,7 @@ public class SettingsTest {
     }
 
     @Test
-    public void testToggleWiFiBand() throws Exception {
+    public void testToggleWiFiBand() {
         // setup
         when(repository.getStringAsInteger(R.string.wifi_band_key, WiFiBand.GHZ2.ordinal())).thenReturn(WiFiBand.GHZ5.ordinal());
         // execute
@@ -320,39 +329,60 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGetCountryCode() throws Exception {
+    public void testGetCountryCode() {
         // setup
-        when(context.getResources()).thenReturn(resources);
-        when(resources.getConfiguration()).thenReturn(configuration);
-        withConfigurationLocale(Locale.UK);
-        String defaultValue = Locale.UK.getCountry();
-        String expected = Locale.US.getCountry();
-
+        String defaultValue = LocaleUtils.getDefaultCountryCode();
+        String expected = "WW";
         when(repository.getString(R.string.country_code_key, defaultValue)).thenReturn(expected);
         // execute
         String actual = fixture.getCountryCode();
         // validate
         assertEquals(expected, actual);
-
         verify(repository).getString(R.string.country_code_key, defaultValue);
-        verify(context).getResources();
-        verify(resources).getConfiguration();
-        verifyConfigurationLocale();
     }
 
     @Test
-    public void testGetStartMenu() throws Exception {
+    public void testGetLanguageLocale() {
         // setup
-        when(repository.getStringAsInteger(R.string.start_menu_key, NavigationMenu.ACCESS_POINTS.ordinal())).thenReturn(NavigationMenu.CHANNEL_GRAPH.ordinal());
+        String defaultValue = LocaleUtils.getDefaultLanguageTag();
+        Locale expected = Locale.FRENCH;
+        when(repository.getString(R.string.language_key, defaultValue)).thenReturn(LocaleUtils.toLanguageTag(expected));
         // execute
-        NavigationMenu actual = fixture.getStartMenu();
+        Locale actual = fixture.getLanguageLocale();
+        // validate
+        assertEquals(expected, actual);
+        verify(repository).getString(R.string.language_key, defaultValue);
+    }
+
+    @Test
+    public void testGetSelectedMenu() {
+        // setup
+        when(repository.getStringAsInteger(R.string.selected_menu_key, NavigationMenu.ACCESS_POINTS.ordinal())).thenReturn(NavigationMenu.CHANNEL_GRAPH.ordinal());
+        // execute
+        NavigationMenu actual = fixture.getSelectedMenu();
         // validate
         assertEquals(NavigationMenu.CHANNEL_GRAPH, actual);
-        verify(repository).getStringAsInteger(R.string.start_menu_key, NavigationMenu.ACCESS_POINTS.ordinal());
+        verify(repository).getStringAsInteger(R.string.selected_menu_key, NavigationMenu.ACCESS_POINTS.ordinal());
     }
 
     @Test
-    public void testIsWiFiOffOnExit() throws Exception {
+    public void testSaveSelectedMenu() {
+        // execute
+        fixture.saveSelectedMenu(NavigationMenu.CHANNEL_GRAPH);
+        // validate
+        verify(repository).save(R.string.selected_menu_key, NavigationMenu.CHANNEL_GRAPH.ordinal());
+    }
+
+    @Test
+    public void testSaveSelectedMenuWithNotAllowedMenu() {
+        // execute
+        fixture.saveSelectedMenu(NavigationMenu.ABOUT);
+        // validate
+        verify(repository, never()).save(anyInt(), anyInt());
+    }
+
+    @Test
+    public void testIsWiFiOffOnExit() {
         // setup
         when(repository.getResourceBoolean(R.bool.wifi_off_on_exit_default)).thenReturn(true);
         when(repository.getBoolean(R.string.wifi_off_on_exit_key, true)).thenReturn(true);
@@ -361,25 +391,19 @@ public class SettingsTest {
         // validate
         assertTrue(actual);
         verify(repository).getBoolean(R.string.wifi_off_on_exit_key, true);
+        verify(repository).getResourceBoolean(R.bool.wifi_off_on_exit_default);
     }
 
-    public boolean isWiFiOffOnExit() {
-        return repository.getBoolean(R.string.wifi_off_on_exit_key, repository.getResourceBoolean(R.bool.wifi_off_on_exit_default));
+    @Test
+    public void testIsKeepScreenOn() {
+        // setup
+        when(repository.getResourceBoolean(R.bool.keep_screen_on_default)).thenReturn(true);
+        when(repository.getBoolean(R.string.keep_screen_on_key, true)).thenReturn(true);
+        // execute
+        boolean actual = fixture.isKeepScreenOn();
+        // validate
+        assertTrue(actual);
+        verify(repository).getBoolean(R.string.keep_screen_on_key, true);
+        verify(repository).getResourceBoolean(R.bool.keep_screen_on_default);
     }
-
-    @SuppressWarnings("deprecation")
-    private void withConfigurationLocale(Locale locale) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            when(configuration.getLocales()).thenReturn(new LocaleList(locale));
-        } else {
-            configuration.locale = locale;
-        }
-    }
-
-    private void verifyConfigurationLocale() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            verify(configuration).getLocales();
-        }
-    }
-
 }

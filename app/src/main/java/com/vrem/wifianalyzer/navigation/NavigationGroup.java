@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,16 @@
 
 package com.vrem.wifianalyzer.navigation;
 
-import android.support.annotation.NonNull;
-
 import org.apache.commons.collections4.Predicate;
 
 import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 public enum NavigationGroup {
     GROUP_FEATURE(NavigationMenu.ACCESS_POINTS, NavigationMenu.CHANNEL_RATING, NavigationMenu.CHANNEL_GRAPH, NavigationMenu.TIME_GRAPH),
-    GROUP_OTHER(NavigationMenu.EXPORT, NavigationMenu.CHANNEL_AVAILABLE, NavigationMenu.VENDOR_LIST),
+    GROUP_OTHER(NavigationMenu.EXPORT, NavigationMenu.CHANNEL_AVAILABLE, NavigationMenu.VENDORS, NavigationMenu.PORT_AUTHORITY),
     GROUP_SETTINGS(NavigationMenu.SETTINGS, NavigationMenu.ABOUT);
 
     private final List<NavigationMenu> navigationMenus;
@@ -68,7 +68,7 @@ public enum NavigationGroup {
     }
 
     static class NavigationPredicate implements Predicate<NavigationGroup> {
-        public final NavigationMenu navigationMenu;
+        private final NavigationMenu navigationMenu;
 
         NavigationPredicate(@NonNull NavigationMenu navigationMenu) {
             this.navigationMenu = navigationMenu;

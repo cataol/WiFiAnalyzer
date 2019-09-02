@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Set;
 
@@ -51,12 +51,12 @@ public class WiFiBandAdapterTest {
     }
 
     @Test
-    public void testIsActive() throws Exception {
+    public void testIsActive() {
         assertFalse(fixture.isActive());
     }
 
     @Test
-    public void testIsActivateWithChanges() throws Exception {
+    public void testIsActivateWithChanges() {
         // setup
         fixture.toggle(WiFiBand.GHZ2);
         // execute & validate
@@ -64,12 +64,12 @@ public class WiFiBandAdapterTest {
     }
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         IterableUtils.forEach(EnumUtils.values(WiFiBand.class), new ContainsClosure());
     }
 
     @Test
-    public void testToggleRemoves() throws Exception {
+    public void testToggleRemoves() {
         // execute
         boolean actual = fixture.toggle(WiFiBand.GHZ2);
         // validate
@@ -78,7 +78,7 @@ public class WiFiBandAdapterTest {
     }
 
     @Test
-    public void testToggleAdds() throws Exception {
+    public void testToggleAdds() {
         // setup
         fixture.toggle(WiFiBand.GHZ5);
         // execute
@@ -89,7 +89,7 @@ public class WiFiBandAdapterTest {
     }
 
     @Test
-    public void testRemovingAllWillNotRemoveLast() throws Exception {
+    public void testRemovingAllWillNotRemoveLast() {
         // setup
         Set<WiFiBand> values = EnumUtils.values(WiFiBand.class);
         // execute
@@ -100,21 +100,21 @@ public class WiFiBandAdapterTest {
     }
 
     @Test
-    public void testGetColorWithExisting() throws Exception {
+    public void testGetColorWithExisting() {
         // execute & validate
-        assertEquals(R.color.connected, fixture.getColor(WiFiBand.GHZ2));
+        assertEquals(R.color.selected, fixture.getColor(WiFiBand.GHZ2));
     }
 
     @Test
-    public void testGetColorWithNonExisting() throws Exception {
+    public void testGetColorWithNonExisting() {
         // setup
         fixture.toggle(WiFiBand.GHZ2);
         // execute & validate
-        assertEquals(R.color.icons_color, fixture.getColor(WiFiBand.GHZ2));
+        assertEquals(R.color.regular, fixture.getColor(WiFiBand.GHZ2));
     }
 
     @Test
-    public void testSave() throws Exception {
+    public void testSave() {
         // setup
         Set<WiFiBand> expected = fixture.getValues();
         // execute

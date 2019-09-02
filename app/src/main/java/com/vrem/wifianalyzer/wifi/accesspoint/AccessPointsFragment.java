@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,59 +19,62 @@
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+import com.vrem.util.BuildUtils;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
 
-public class AccessPointsFragment extends Fragment {
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener;
+
+public class AccessPointsFragment extends Fragment implements OnRefreshListener {
     private SwipeRefreshLayout swipeRefreshLayout;
     private AccessPointsAdapter accessPointsAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        FragmentActivity activity = getActivity();
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.access_points_content, container, false);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.accessPointsRefresh);
-        swipeRefreshLayout.setOnRefreshListener(new ListViewOnRefreshListener());
+        swipeRefreshLayout = view.findViewById(R.id.accessPointsRefresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
+        if (BuildUtils.isMinVersionP()) {
+            swipeRefreshLayout.setRefreshing(false);
+            swipeRefreshLayout.setEnabled(false);
+        }
 
-        accessPointsAdapter = new AccessPointsAdapter(activity);
-        ExpandableListView expandableListView = (ExpandableListView) view.findViewById(R.id.accessPointsView);
+        accessPointsAdapter = new AccessPointsAdapter();
+        ExpandableListView expandableListView = view.findViewById(R.id.accessPointsView);
         expandableListView.setAdapter(accessPointsAdapter);
         accessPointsAdapter.setExpandableListView(expandableListView);
 
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.register(accessPointsAdapter);
+        MainContext.INSTANCE.getScannerService().register(accessPointsAdapter);
 
         return view;
     }
 
-    private void refresh() {
+    @Override
+    public void onRefresh() {
         swipeRefreshLayout.setRefreshing(true);
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.update();
+        MainContext.INSTANCE.getScannerService().update();
         swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refresh();
+        onRefresh();
     }
 
     @Override
     public void onDestroy() {
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.unregister(accessPointsAdapter);
+        MainContext.INSTANCE.getScannerService().unregister(accessPointsAdapter);
         super.onDestroy();
     }
 
@@ -79,10 +82,4 @@ public class AccessPointsFragment extends Fragment {
         return accessPointsAdapter;
     }
 
-    private class ListViewOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
-        @Override
-        public void onRefresh() {
-            refresh();
-        }
-    }
 }

@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import com.jjoe64.graphview.GraphView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.verify;
 
@@ -38,7 +38,7 @@ public class GraphViewAddTest {
     private ViewGroup viewGroup;
 
     @Test
-    public void testSetGraphView() throws Exception {
+    public void testSetGraphView() {
         // setup
         GraphViewAdd fixture = new GraphViewAdd(viewGroup);
         // execute

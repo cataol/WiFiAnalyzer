@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,73 +19,70 @@
 package com.vrem.wifianalyzer.wifi.timegraph;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.vrem.util.BuildUtils;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.wifi.graphutils.GraphViewAdd;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
 
 import org.apache.commons.collections4.IterableUtils;
 
-public class TimeGraphFragment extends Fragment {
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+public class TimeGraphFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private SwipeRefreshLayout swipeRefreshLayout;
     private TimeGraphAdapter timeGraphAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.graph_content, container, false);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.graphRefresh);
-        swipeRefreshLayout.setOnRefreshListener(new ListViewOnRefreshListener());
+        swipeRefreshLayout = view.findViewById(R.id.graphRefresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
+        if (BuildUtils.isMinVersionP()) {
+            swipeRefreshLayout.setRefreshing(false);
+            swipeRefreshLayout.setEnabled(false);
+        }
 
         timeGraphAdapter = new TimeGraphAdapter();
         addGraphViews(swipeRefreshLayout, timeGraphAdapter);
 
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.register(timeGraphAdapter);
+        MainContext.INSTANCE.getScannerService().register(timeGraphAdapter);
 
         return view;
     }
 
     private void addGraphViews(View view, TimeGraphAdapter timeGraphAdapter) {
         IterableUtils.forEach(timeGraphAdapter.getGraphViews(),
-            new GraphViewAdd((ViewGroup) view.findViewById(R.id.graphFlipper)));
+            new GraphViewAdd(view.findViewById(R.id.graphFlipper)));
     }
 
-    private void refresh() {
+    @Override
+    public void onRefresh() {
         swipeRefreshLayout.setRefreshing(true);
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.update();
+        MainContext.INSTANCE.getScannerService().update();
         swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refresh();
+        onRefresh();
     }
 
     @Override
     public void onDestroy() {
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.unregister(timeGraphAdapter);
+        MainContext.INSTANCE.getScannerService().unregister(timeGraphAdapter);
         super.onDestroy();
     }
 
     TimeGraphAdapter getTimeGraphAdapter() {
         return timeGraphAdapter;
-    }
-
-    private class ListViewOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
-        @Override
-        public void onRefresh() {
-            refresh();
-        }
     }
 
 }

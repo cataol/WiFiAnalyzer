@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package com.vrem.wifianalyzer.wifi.channelgraph;
 
-import android.support.v4.util.Pair;
-
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
 import com.vrem.wifianalyzer.wifi.band.WiFiChannel;
 import com.vrem.wifianalyzer.wifi.band.WiFiWidth;
@@ -31,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import androidx.core.util.Pair;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -39,13 +39,13 @@ public class InRangePredicateTest {
     private InRangePredicate fixture;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         wiFiChannelPair = WiFiBand.GHZ2.getWiFiChannels().getWiFiChannelPairs().get(0);
         fixture = new InRangePredicate(wiFiChannelPair);
     }
 
     @Test
-    public void testInRangePredicateWithValidFrequency() throws Exception {
+    public void testInRangePredicateWithValidFrequency() {
         // execute & validate
         assertTrue(fixture.evaluate(makeWiFiDetail(wiFiChannelPair.first.getFrequency())));
         assertTrue(fixture.evaluate(makeWiFiDetail(wiFiChannelPair.second.getFrequency())));
@@ -53,14 +53,14 @@ public class InRangePredicateTest {
     }
 
     @Test
-    public void testInRangePredicateWithInvalidValidFrequency() throws Exception {
+    public void testInRangePredicateWithInvalidValidFrequency() {
         // execute & validate
         assertFalse(fixture.evaluate(makeWiFiDetail(wiFiChannelPair.first.getFrequency() - 1)));
         assertFalse(fixture.evaluate(makeWiFiDetail(wiFiChannelPair.second.getFrequency() + 1)));
     }
 
     private WiFiDetail makeWiFiDetail(int frequency) {
-        WiFiSignal wiFiSignal = new WiFiSignal(frequency + 20, frequency, WiFiWidth.MHZ_20, -10);
+        WiFiSignal wiFiSignal = new WiFiSignal(frequency + 20, frequency, WiFiWidth.MHZ_20, -10, true);
         return new WiFiDetail("SSID", "BSSID", StringUtils.EMPTY, wiFiSignal, WiFiAdditional.EMPTY);
     }
 

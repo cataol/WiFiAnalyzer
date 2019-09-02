@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,18 @@ import com.jjoe64.graphview.series.DataPoint;
 
 import org.mockito.ArgumentMatcher;
 
-public class DataPointEquals extends ArgumentMatcher<DataPoint> {
+import androidx.annotation.NonNull;
+
+public class DataPointEquals implements ArgumentMatcher<DataPoint> {
 
     private final DataPoint expected;
 
-    public DataPointEquals(DataPoint expected) {
+    public DataPointEquals(@NonNull DataPoint expected) {
         this.expected = expected;
     }
 
     @Override
-    public boolean matches(Object actual) {
-        return expected.getX() == ((DataPoint) actual).getX() && expected.getY() == ((DataPoint) actual).getY();
+    public boolean matches(DataPoint argument) {
+        return expected.getX() == argument.getX() && expected.getY() == argument.getY();
     }
 }

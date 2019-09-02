@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +64,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         // setup
         List<WiFiDetail> wiFiDetails = withData();
         // execute
@@ -74,7 +74,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testGet() throws Exception {
+    public void testGet() {
         // setup
         List<WiFiDetail> wiFiDetails = withData();
         // execute & validate
@@ -85,7 +85,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testAddExistingSeries() throws Exception {
+    public void testAddExistingSeries() {
         // setup
         List<WiFiDetail> wiFiDetails = withData();
         // execute
@@ -113,7 +113,7 @@ public class SeriesCacheTest {
         // setup
         List<WiFiDetail> expected = withData();
         // execute
-        List<WiFiDetail> actual = fixture.difference(new TreeSet<WiFiDetail>());
+        List<WiFiDetail> actual = fixture.difference(new TreeSet<>());
         // validate
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); i++) {
@@ -132,18 +132,18 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testRemoveExpectedAllLeft() throws Exception {
+    public void testRemoveExpectedAllLeft() {
         // setup
         List<WiFiDetail> expected = withData();
         // execute
-        List<BaseSeries<DataPoint>> actual = fixture.remove(Collections.<WiFiDetail>emptyList());
+        List<BaseSeries<DataPoint>> actual = fixture.remove(Collections.emptyList());
         // validate
         assertTrue(actual.isEmpty());
         IterableUtils.forEach(expected, new ContainsTrueClosure());
     }
 
     @Test
-    public void testRemoveExpectNoneLeft() throws Exception {
+    public void testRemoveExpectNoneLeft() {
         // setup
         List<WiFiDetail> expected = withData();
         // execute
@@ -154,7 +154,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testRemoveExpectOneLeft() throws Exception {
+    public void testRemoveExpectOneLeft() {
         // setup
         List<WiFiDetail> expected = withData();
         // execute
@@ -169,7 +169,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testRemoveNonExistingOne() throws Exception {
+    public void testRemoveNonExistingOne() {
         // setup
         List<WiFiDetail> expected = withData();
         List<WiFiDetail> toRemove = Collections.singletonList(makeWiFiDetail("SSID-999"));
@@ -181,7 +181,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testRemoveExpectMoreThanOneLeft() throws Exception {
+    public void testRemoveExpectMoreThanOneLeft() {
         // setup
         List<WiFiDetail> expected = withData();
         // execute
@@ -196,7 +196,7 @@ public class SeriesCacheTest {
     }
 
     @Test
-    public void testFind() throws Exception {
+    public void testFind() {
         // setup
         List<WiFiDetail> wiFiDetails = withData();
         // execute
@@ -206,7 +206,8 @@ public class SeriesCacheTest {
     }
 
     private WiFiDetail makeWiFiDetail(String SSID) {
-        return new WiFiDetail(SSID, "BSSID", StringUtils.EMPTY, new WiFiSignal(100, 100, WiFiWidth.MHZ_20, 5));
+        return new WiFiDetail(SSID, "BSSID", StringUtils.EMPTY,
+            new WiFiSignal(100, 100, WiFiWidth.MHZ_20, 5, true));
     }
 
     private List<WiFiDetail> withData() {

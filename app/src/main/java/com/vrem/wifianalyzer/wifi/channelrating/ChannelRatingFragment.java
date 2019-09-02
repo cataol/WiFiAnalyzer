@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,61 +19,64 @@
 package com.vrem.wifianalyzer.wifi.channelrating;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.vrem.util.BuildUtils;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
-import com.vrem.wifianalyzer.wifi.scanner.Scanner;
 
-public class ChannelRatingFragment extends Fragment {
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener;
+
+public class ChannelRatingFragment extends Fragment implements OnRefreshListener {
     private SwipeRefreshLayout swipeRefreshLayout;
     private ChannelRatingAdapter channelRatingAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        FragmentActivity activity = getActivity();
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.channel_rating_content, container, false);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.channelRatingRefresh);
-        swipeRefreshLayout.setOnRefreshListener(new ListViewOnRefreshListener());
+        swipeRefreshLayout = view.findViewById(R.id.channelRatingRefresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
+        if (BuildUtils.isMinVersionP()) {
+            swipeRefreshLayout.setRefreshing(false);
+            swipeRefreshLayout.setEnabled(false);
+        }
 
-        TextView bestChannels = (TextView) view.findViewById(R.id.channelRatingBestChannels);
-        ListView listView = (ListView) view.findViewById(R.id.channelRatingView);
+        TextView bestChannels = view.findViewById(R.id.channelRatingBestChannels);
+        ListView listView = view.findViewById(R.id.channelRatingView);
 
-        channelRatingAdapter = new ChannelRatingAdapter(activity, bestChannels);
+        channelRatingAdapter = new ChannelRatingAdapter(getActivity(), bestChannels);
         listView.setAdapter(channelRatingAdapter);
 
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.register(channelRatingAdapter);
+        MainContext.INSTANCE.getScannerService().register(channelRatingAdapter);
 
         return view;
     }
 
-    private void refresh() {
+    @Override
+    public void onRefresh() {
         swipeRefreshLayout.setRefreshing(true);
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.update();
+        MainContext.INSTANCE.getScannerService().update();
         swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refresh();
+        onRefresh();
     }
 
     @Override
     public void onDestroy() {
-        Scanner scanner = MainContext.INSTANCE.getScanner();
-        scanner.unregister(channelRatingAdapter);
+        MainContext.INSTANCE.getScannerService().unregister(channelRatingAdapter);
         super.onDestroy();
     }
 
@@ -81,10 +84,4 @@ public class ChannelRatingFragment extends Fragment {
         return channelRatingAdapter;
     }
 
-    private class ListViewOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
-        @Override
-        public void onRefresh() {
-            refresh();
-        }
-    }
 }

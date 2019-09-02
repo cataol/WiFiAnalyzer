@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,11 @@
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
 import android.net.wifi.WifiInfo;
-import android.support.annotation.NonNull;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.vrem.wifianalyzer.BuildConfig;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContextHelper;
 import com.vrem.wifianalyzer.R;
@@ -43,19 +42,24 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import java.util.Collections;
+
+import androidx.annotation.NonNull;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(AndroidJUnit4.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@LooperMode(PAUSED)
 public class ConnectionViewTest {
     private static final String SSID = "SSID";
     private static final String BSSID = "BSSID";
@@ -87,11 +91,11 @@ public class ConnectionViewTest {
     @After
     public void tearDown() {
         MainContextHelper.INSTANCE.restore();
-        mainActivity.getNavigationMenuView().setCurrentNavigationMenu(NavigationMenu.ACCESS_POINTS);
+        mainActivity.setCurrentNavigationMenu(NavigationMenu.ACCESS_POINTS);
     }
 
     @Test
-    public void testConnectionGoneWithNoConnectionInformation() throws Exception {
+    public void testConnectionGoneWithNoConnectionInformation() {
         // setup
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
         withConnectionInformation(withConnection(WiFiAdditional.EMPTY));
@@ -103,7 +107,7 @@ public class ConnectionViewTest {
     }
 
     @Test
-    public void testConnectionGoneWithConnectionInformationAndHideType() throws Exception {
+    public void testConnectionGoneWithConnectionInformationAndHideType() {
         // setup
         WiFiDetail connection = withConnection(withWiFiAdditional());
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.HIDE);
@@ -117,7 +121,7 @@ public class ConnectionViewTest {
     }
 
     @Test
-    public void testConnectionVisibleWithConnectionInformation() throws Exception {
+    public void testConnectionVisibleWithConnectionInformation() {
         // setup
         WiFiDetail connection = withConnection(withWiFiAdditional());
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
@@ -131,7 +135,7 @@ public class ConnectionViewTest {
     }
 
     @Test
-    public void testConnectionWithConnectionInformation() throws Exception {
+    public void testConnectionWithConnectionInformation() {
         // setup
         WiFiAdditional wiFiAdditional = withWiFiAdditional();
         WiFiDetail connection = withConnection(wiFiAdditional);
@@ -143,14 +147,15 @@ public class ConnectionViewTest {
         // validate
         WiFiConnection wiFiConnection = wiFiAdditional.getWiFiConnection();
         View view = mainActivity.findViewById(R.id.connection);
-        assertEquals(wiFiConnection.getIpAddress(), ((TextView) view.findViewById(R.id.ipAddress)).getText().toString());
-        TextView linkSpeedView = (TextView) view.findViewById(R.id.linkSpeed);
+        TextView ipAddressView = view.findViewById(R.id.ipAddress);
+        assertEquals(wiFiConnection.getIpAddress(), ipAddressView.getText().toString());
+        TextView linkSpeedView = view.findViewById(R.id.linkSpeed);
         assertEquals(View.VISIBLE, linkSpeedView.getVisibility());
         assertEquals(wiFiConnection.getLinkSpeed() + WifiInfo.LINK_SPEED_UNITS, linkSpeedView.getText().toString());
     }
 
     @Test
-    public void testConnectionWithInvalidLinkSpeed() throws Exception {
+    public void testConnectionWithInvalidLinkSpeed() {
         // setup
         WiFiConnection wiFiConnection = new WiFiConnection(SSID, BSSID, IP_ADDRESS, WiFiConnection.LINK_SPEED_INVALID);
         WiFiDetail connection = withConnection(new WiFiAdditional(StringUtils.EMPTY, wiFiConnection));
@@ -161,24 +166,25 @@ public class ConnectionViewTest {
         fixture.update(wiFiData);
         // validate
         View view = mainActivity.findViewById(R.id.connection);
-        TextView linkSpeedView = (TextView) view.findViewById(R.id.linkSpeed);
+        TextView linkSpeedView = view.findViewById(R.id.linkSpeed);
         assertEquals(View.GONE, linkSpeedView.getVisibility());
     }
 
     @Test
-    public void testNoDataIsVisibleWithNoWiFiDetails() throws Exception {
+    public void testNoDataIsVisibleWithNoWiFiDetails() {
         // setup
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
         when(wiFiData.getConnection()).thenReturn(withConnection(WiFiAdditional.EMPTY));
         // execute
         fixture.update(wiFiData);
         // validate
-        assertEquals(View.VISIBLE, mainActivity.findViewById(R.id.nodata).getVisibility());
+        assertEquals(View.VISIBLE, mainActivity.findViewById(R.id.no_data).getVisibility());
+        assertEquals(View.VISIBLE, mainActivity.findViewById(R.id.no_location).getVisibility());
         verify(wiFiData).getWiFiDetails();
     }
 
     @Test
-    public void testNoDataIsGoneWithWiFiDetails() throws Exception {
+    public void testNoDataIsGoneWithWiFiDetails() {
         // setup
         WiFiDetail wiFiDetail = withConnection(WiFiAdditional.EMPTY);
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
@@ -187,25 +193,64 @@ public class ConnectionViewTest {
         // execute
         fixture.update(wiFiData);
         // validate
-        assertEquals(View.GONE, mainActivity.findViewById(R.id.nodata).getVisibility());
+        assertEquals(View.GONE, mainActivity.findViewById(R.id.no_data).getVisibility());
         verify(wiFiData).getWiFiDetails();
     }
 
     @Test
-    public void testNoDataIsGoneWithNavigationMenuThatDoesNotHaveOptionMenu() throws Exception {
+    public void testNoDataIsGoneWithNavigationMenuThatDoesNotHaveOptionMenu() {
         // setup
-        mainActivity.getNavigationMenuView().setCurrentNavigationMenu(NavigationMenu.VENDOR_LIST);
+        mainActivity.setCurrentNavigationMenu(NavigationMenu.VENDORS);
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
         when(wiFiData.getConnection()).thenReturn(withConnection(WiFiAdditional.EMPTY));
         // execute
         fixture.update(wiFiData);
         // validate
-        assertEquals(View.GONE, mainActivity.findViewById(R.id.nodata).getVisibility());
+        assertEquals(View.GONE, mainActivity.findViewById(R.id.no_data).getVisibility());
         verify(wiFiData, never()).getWiFiDetails();
     }
 
     @Test
-    public void testViewCompactAddsPopup() throws Exception {
+    public void testScanningIsVisibleWithNoWiFiDetails() {
+        // setup
+        when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
+        when(wiFiData.getConnection()).thenReturn(withConnection(WiFiAdditional.EMPTY));
+        // execute
+        fixture.update(wiFiData);
+        // validate
+        assertEquals(View.VISIBLE, mainActivity.findViewById(R.id.scanning).getVisibility());
+        verify(wiFiData).getWiFiDetails();
+    }
+
+    @Test
+    public void testScanningIsGoneWithWiFiDetails() {
+        // setup
+        WiFiDetail wiFiDetail = withConnection(WiFiAdditional.EMPTY);
+        when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
+        when(wiFiData.getConnection()).thenReturn(wiFiDetail);
+        when(wiFiData.getWiFiDetails()).thenReturn(Collections.singletonList(wiFiDetail));
+        // execute
+        fixture.update(wiFiData);
+        // validate
+        assertEquals(View.GONE, mainActivity.findViewById(R.id.scanning).getVisibility());
+        verify(wiFiData).getWiFiDetails();
+    }
+
+    @Test
+    public void testScanningIsGoneWithNavigationMenuThatDoesNotHaveOptionMenu() {
+        // setup
+        mainActivity.setCurrentNavigationMenu(NavigationMenu.VENDORS);
+        when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
+        when(wiFiData.getConnection()).thenReturn(withConnection(WiFiAdditional.EMPTY));
+        // execute
+        fixture.update(wiFiData);
+        // validate
+        assertEquals(View.GONE, mainActivity.findViewById(R.id.scanning).getVisibility());
+        verify(wiFiData, never()).getWiFiDetails();
+    }
+
+    @Test
+    public void testViewCompactAddsPopup() {
         // setup
         WiFiDetail connection = withConnection(withWiFiAdditional());
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPACT);
@@ -220,7 +265,8 @@ public class ConnectionViewTest {
 
     private WiFiDetail withConnection(@NonNull WiFiAdditional wiFiAdditional) {
         return new WiFiDetail(SSID, BSSID, StringUtils.EMPTY,
-            new WiFiSignal(2435, 2435, WiFiWidth.MHZ_20, -55), wiFiAdditional);
+            new WiFiSignal(2435, 2435, WiFiWidth.MHZ_20, -55, true),
+            wiFiAdditional);
     }
 
     private WiFiAdditional withWiFiAdditional() {
@@ -229,7 +275,7 @@ public class ConnectionViewTest {
     }
 
     private View withAccessPointDetailView(@NonNull WiFiDetail connection, @NonNull AccessPointViewType accessPointViewType) {
-        ViewGroup parent = (ViewGroup) mainActivity.findViewById(R.id.connection).findViewById(R.id.connectionDetail);
+        ViewGroup parent = mainActivity.findViewById(R.id.connection).findViewById(R.id.connectionDetail);
         View view = mainActivity.getLayoutInflater().inflate(accessPointViewType.getLayout(), parent, false);
         when(accessPointDetail.makeView(null, parent, connection, false, accessPointViewType)).thenReturn(view);
         when(accessPointDetail.makeView(parent.getChildAt(0), parent, connection, false, accessPointViewType)).thenReturn(view);

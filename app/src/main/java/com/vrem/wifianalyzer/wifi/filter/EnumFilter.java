@@ -1,7 +1,7 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
- *  
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,6 @@
 package com.vrem.wifianalyzer.wifi.filter;
 
 import android.app.Dialog;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +30,9 @@ import org.apache.commons.collections4.IterableUtils;
 
 import java.util.Map;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
 abstract class EnumFilter<T extends Enum, U extends EnumFilterAdapter<T>> {
     private final U filter;
 
@@ -39,12 +40,6 @@ abstract class EnumFilter<T extends Enum, U extends EnumFilterAdapter<T>> {
         this.filter = filter;
         IterableUtils.forEach(ids.keySet(), new EnumFilterClosure(ids, dialog));
         dialog.findViewById(id).setVisibility(View.VISIBLE);
-    }
-
-    private void setInformation(@NonNull Dialog dialog, int id, @NonNull T object) {
-        View view = dialog.findViewById(id);
-        view.setOnClickListener(new OnClickListener(object));
-        setColor(view, object);
     }
 
     private void setColor(@NonNull View view, @NonNull T object) {
@@ -69,6 +64,12 @@ abstract class EnumFilter<T extends Enum, U extends EnumFilterAdapter<T>> {
         @Override
         public void execute(T input) {
             setInformation(dialog, ids.get(input), input);
+        }
+
+        private void setInformation(@NonNull Dialog dialog, int id, @NonNull T object) {
+            View view = dialog.findViewById(id);
+            view.setOnClickListener(new OnClickListener(object));
+            setColor(view, object);
         }
     }
 

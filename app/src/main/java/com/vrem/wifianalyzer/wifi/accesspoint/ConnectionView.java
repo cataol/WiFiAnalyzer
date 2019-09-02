@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 package com.vrem.wifianalyzer.wifi.accesspoint;
 
 import android.net.wifi.WifiInfo;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.vrem.util.BuildUtils;
 import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
@@ -33,6 +33,8 @@ import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 import com.vrem.wifianalyzer.wifi.scanner.UpdateNotifier;
 
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
 
 public class ConnectionView implements UpdateNotifier {
     private final MainActivity mainActivity;
@@ -48,8 +50,8 @@ public class ConnectionView implements UpdateNotifier {
     @Override
     public void update(@NonNull WiFiData wiFiData) {
         ConnectionViewType connectionViewType = MainContext.INSTANCE.getSettings().getConnectionViewType();
-        setConnectionVisibility(wiFiData, connectionViewType);
-        setNoDataVisibility(wiFiData);
+        displayConnection(wiFiData, connectionViewType);
+        displayNoData(wiFiData);
     }
 
     void setAccessPointDetail(@NonNull AccessPointDetail accessPointDetail) {
@@ -60,15 +62,24 @@ public class ConnectionView implements UpdateNotifier {
         this.accessPointPopup = accessPointPopup;
     }
 
-    private void setNoDataVisibility(@NonNull WiFiData wiFiData) {
-        mainActivity.findViewById(R.id.nodata).setVisibility(isDataAvailable(wiFiData) ? View.GONE : View.VISIBLE);
+    private void displayNoData(@NonNull WiFiData wiFiData) {
+        int visibility = noData(wiFiData) ? View.VISIBLE : View.GONE;
+        mainActivity.findViewById(R.id.scanning).setVisibility(visibility);
+        mainActivity.findViewById(R.id.no_data).setVisibility(visibility);
+        if (BuildUtils.isMinVersionM()) {
+            mainActivity.findViewById(R.id.no_location).setVisibility(getNoLocationVisibility(visibility));
+        }
     }
 
-    private boolean isDataAvailable(@NonNull WiFiData wiFiData) {
-        return !mainActivity.getNavigationMenuView().getCurrentNavigationMenu().isRegistered() || !wiFiData.getWiFiDetails().isEmpty();
+    private int getNoLocationVisibility(int visibility) {
+        return mainActivity.getPermissionService().isEnabled() ? View.GONE : visibility;
     }
 
-    private void setConnectionVisibility(@NonNull WiFiData wiFiData, @NonNull ConnectionViewType connectionViewType) {
+    private boolean noData(@NonNull WiFiData wiFiData) {
+        return mainActivity.getCurrentNavigationMenu().isRegistered() && wiFiData.getWiFiDetails().isEmpty();
+    }
+
+    private void displayConnection(@NonNull WiFiData wiFiData, @NonNull ConnectionViewType connectionViewType) {
         WiFiDetail connection = wiFiData.getConnection();
         View connectionView = mainActivity.findViewById(R.id.connection);
         WiFiConnection wiFiConnection = connection.getWiFiAdditional().getWiFiConnection();
@@ -76,7 +87,7 @@ public class ConnectionView implements UpdateNotifier {
             connectionView.setVisibility(View.GONE);
         } else {
             connectionView.setVisibility(View.VISIBLE);
-            ViewGroup parent = (ViewGroup) connectionView.findViewById(R.id.connectionDetail);
+            ViewGroup parent = connectionView.findViewById(R.id.connectionDetail);
             View view = accessPointDetail.makeView(parent.getChildAt(0), parent, connection, false, connectionViewType.getAccessPointViewType());
             if (parent.getChildCount() == 0) {
                 parent.addView(view);
@@ -88,9 +99,9 @@ public class ConnectionView implements UpdateNotifier {
 
     private void setViewConnection(View connectionView, WiFiConnection wiFiConnection) {
         String ipAddress = wiFiConnection.getIpAddress();
-        ((TextView) connectionView.findViewById(R.id.ipAddress)).setText(ipAddress);
+        connectionView.<TextView>findViewById(R.id.ipAddress).setText(ipAddress);
 
-        TextView textLinkSpeed = (TextView) connectionView.findViewById(R.id.linkSpeed);
+        TextView textLinkSpeed = connectionView.findViewById(R.id.linkSpeed);
         int linkSpeed = wiFiConnection.getLinkSpeed();
         if (linkSpeed == WiFiConnection.LINK_SPEED_INVALID) {
             textLinkSpeed.setVisibility(View.GONE);

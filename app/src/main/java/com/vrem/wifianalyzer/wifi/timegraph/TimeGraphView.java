@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,14 @@
 package com.vrem.wifianalyzer.wifi.timegraph;
 
 import android.content.res.Resources;
-import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.jjoe64.graphview.GraphView;
 import com.vrem.wifianalyzer.Configuration;
-import com.vrem.wifianalyzer.MainActivity;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.settings.Settings;
+import com.vrem.wifianalyzer.settings.ThemeStyle;
 import com.vrem.wifianalyzer.wifi.band.WiFiBand;
 import com.vrem.wifianalyzer.wifi.graphutils.GraphConstants;
 import com.vrem.wifianalyzer.wifi.graphutils.GraphViewBuilder;
@@ -42,7 +41,9 @@ import org.apache.commons.collections4.Predicate;
 import java.util.List;
 import java.util.Set;
 
-class TimeGraphView implements GraphViewNotifier, GraphConstants {
+import androidx.annotation.NonNull;
+
+class TimeGraphView implements GraphViewNotifier {
     private final WiFiBand wiFiBand;
     private DataManager dataManager;
     private GraphViewWrapper graphViewWrapper;
@@ -69,12 +70,13 @@ class TimeGraphView implements GraphViewNotifier, GraphConstants {
     }
 
     @Override
+    @NonNull
     public GraphView getGraphView() {
         return graphViewWrapper.getGraphView();
     }
 
     private int getNumX() {
-        return NUM_X_TIME;
+        return GraphConstants.NUM_X_TIME;
     }
 
     void setGraphViewWrapper(@NonNull GraphViewWrapper graphViewWrapper) {
@@ -85,9 +87,10 @@ class TimeGraphView implements GraphViewNotifier, GraphConstants {
         this.dataManager = dataManager;
     }
 
-    private GraphView makeGraphView(@NonNull MainActivity mainActivity, int graphMaximumY) {
-        Resources resources = mainActivity.getResources();
-        return new GraphViewBuilder(mainActivity, getNumX(), graphMaximumY)
+    @NonNull
+    private GraphView makeGraphView(@NonNull MainContext mainContext, int graphMaximumY, @NonNull ThemeStyle themeStyle) {
+        Resources resources = mainContext.getResources();
+        return new GraphViewBuilder(mainContext.getContext(), getNumX(), graphMaximumY, themeStyle)
             .setLabelFormatter(new TimeAxisLabel())
             .setVerticalTitle(resources.getString(R.string.graph_axis_y))
             .setHorizontalTitle(resources.getString(R.string.graph_time_axis_x))
@@ -95,13 +98,15 @@ class TimeGraphView implements GraphViewNotifier, GraphConstants {
             .build();
     }
 
+    @NonNull
     private GraphViewWrapper makeGraphViewWrapper() {
         MainContext mainContext = MainContext.INSTANCE;
-        MainActivity mainActivity = mainContext.getMainActivity();
         Settings settings = mainContext.getSettings();
+        ThemeStyle themeStyle = settings.getThemeStyle();
+        int graphMaximumY = settings.getGraphMaximumY();
         Configuration configuration = mainContext.getConfiguration();
-        GraphView graphView = makeGraphView(mainActivity, settings.getGraphMaximumY());
-        graphViewWrapper = new GraphViewWrapper(graphView, settings.getTimeGraphLegend());
+        GraphView graphView = makeGraphView(mainContext, graphMaximumY, themeStyle);
+        graphViewWrapper = new GraphViewWrapper(graphView, settings.getTimeGraphLegend(), themeStyle);
         configuration.setSize(graphViewWrapper.getSize(graphViewWrapper.calculateGraphType()));
         graphViewWrapper.setViewport();
         return graphViewWrapper;

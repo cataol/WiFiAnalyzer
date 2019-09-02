@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@
 
 package com.vrem.wifianalyzer.wifi.filter.adapter;
 
-import android.support.annotation.NonNull;
-
 import com.vrem.wifianalyzer.settings.Settings;
 
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 public abstract class BasicFilterAdapter<T> {
     private Set<T> values;
@@ -31,6 +31,7 @@ public abstract class BasicFilterAdapter<T> {
         setValues(values);
     }
 
+    @NonNull
     public Set<T> getValues() {
         return values;
     }

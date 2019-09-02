@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,15 @@ package com.vrem.wifianalyzer;
 
 import com.vrem.wifianalyzer.settings.Settings;
 import com.vrem.wifianalyzer.settings.ThemeStyle;
-import com.vrem.wifianalyzer.wifi.accesspoint.AccessPointViewType;
 import com.vrem.wifianalyzer.wifi.accesspoint.ConnectionViewType;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MainReloadTest {
-    private static final int GRAPH_MAXIMUM_Y = 10;
+    private static final Locale TEST_LOCALE = Locale.UK;
     private Settings settings;
     private MainReload fixture;
 
@@ -47,9 +48,8 @@ public class MainReloadTest {
         settings = MainContextHelper.INSTANCE.getSettings();
 
         when(settings.getThemeStyle()).thenReturn(ThemeStyle.DARK);
-        when(settings.getAccessPointView()).thenReturn(AccessPointViewType.COMPLETE);
         when(settings.getConnectionViewType()).thenReturn(ConnectionViewType.COMPLETE);
-        when(settings.getGraphMaximumY()).thenReturn(GRAPH_MAXIMUM_Y);
+        when(settings.getLanguageLocale()).thenReturn(TEST_LOCALE);
 
         fixture = new MainReload(settings);
     }
@@ -57,15 +57,14 @@ public class MainReloadTest {
     @After
     public void tearDown() {
         verify(settings, atLeastOnce()).getThemeStyle();
-        verify(settings, atLeastOnce()).getAccessPointView();
         verify(settings, atLeastOnce()).getConnectionViewType();
-        verify(settings, atLeastOnce()).getGraphMaximumY();
+        verify(settings, atLeastOnce()).getLanguageLocale();
 
         MainContextHelper.INSTANCE.restore();
     }
 
     @Test
-    public void testShouldNotReloadWithNoThemeChanges() throws Exception {
+    public void testShouldNotReloadWithNoThemeChanges() {
         // execute
         boolean actual = fixture.shouldReload(settings);
         // validate
@@ -74,7 +73,7 @@ public class MainReloadTest {
     }
 
     @Test
-    public void testShouldReloadWithThemeChange() throws Exception {
+    public void testShouldReloadWithThemeChange() {
         // setup
         ThemeStyle expected = ThemeStyle.LIGHT;
         when(settings.getThemeStyle()).thenReturn(expected);
@@ -86,28 +85,7 @@ public class MainReloadTest {
     }
 
     @Test
-    public void testShouldNotReloadWithNoAccessPointViewChanges() throws Exception {
-        // execute
-        boolean actual = fixture.shouldReload(settings);
-        // validate
-        assertFalse(actual);
-        assertEquals(AccessPointViewType.COMPLETE, fixture.getAccessPointViewType());
-    }
-
-    @Test
-    public void testShouldReloadWithAccessPointViewChange() throws Exception {
-        // setup
-        AccessPointViewType expected = AccessPointViewType.COMPACT;
-        when(settings.getAccessPointView()).thenReturn(expected);
-        // execute
-        boolean actual = fixture.shouldReload(settings);
-        // validate
-        assertTrue(actual);
-        assertEquals(expected, fixture.getAccessPointViewType());
-    }
-
-    @Test
-    public void testShouldNotReloadWithNoConnectionViewTypeChanges() throws Exception {
+    public void testShouldNotReloadWithNoConnectionViewTypeChanges() {
         // execute
         boolean actual = fixture.shouldReload(settings);
         // validate
@@ -116,7 +94,7 @@ public class MainReloadTest {
     }
 
     @Test
-    public void testShouldReloadWithConnectionViewTypeChange() throws Exception {
+    public void testShouldReloadWithConnectionViewTypeChange() {
         // setup
         ConnectionViewType expected = ConnectionViewType.COMPACT;
         when(settings.getConnectionViewType()).thenReturn(expected);
@@ -128,24 +106,24 @@ public class MainReloadTest {
     }
 
     @Test
-    public void testShouldNotReloadWithNoGraphMaximumYChanges() throws Exception {
+    public void testShouldNotReloadWithNoLanguageLocaleChanges() {
         // execute
         boolean actual = fixture.shouldReload(settings);
         // validate
         assertFalse(actual);
-        assertEquals(GRAPH_MAXIMUM_Y, fixture.getGraphMaximumY());
+        assertEquals(Locale.UK, fixture.getLanguageLocale());
     }
 
     @Test
-    public void testShouldReloadWithGraphMaximumYChange() throws Exception {
+    public void testShouldReloadWithLanguageLocaleChange() {
         // setup
-        int expected = -GRAPH_MAXIMUM_Y;
-        when(settings.getGraphMaximumY()).thenReturn(expected);
+        Locale expected = Locale.US;
+        when(settings.getLanguageLocale()).thenReturn(expected);
         // execute
         boolean actual = fixture.shouldReload(settings);
         // validate
         assertTrue(actual);
-        assertEquals(expected, fixture.getGraphMaximumY());
+        assertEquals(expected, fixture.getLanguageLocale());
     }
 
 }

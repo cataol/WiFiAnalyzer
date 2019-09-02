@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2017  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2019  VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,12 @@ import static org.junit.Assert.assertEquals;
 public class WiFiWidthTest {
 
     @Test
-    public void testWiFiWidth() throws Exception {
+    public void testWiFiWidth() {
         assertEquals(5, WiFiWidth.values().length);
     }
 
     @Test
-    public void testGetFrequencyWidth() throws Exception {
+    public void testGetFrequencyWidth() {
         assertEquals(20, WiFiWidth.MHZ_20.getFrequencyWidth());
         assertEquals(40, WiFiWidth.MHZ_40.getFrequencyWidth());
         assertEquals(80, WiFiWidth.MHZ_80.getFrequencyWidth());
@@ -39,7 +39,7 @@ public class WiFiWidthTest {
     }
 
     @Test
-    public void testGetFrequencyHalfWidth() throws Exception {
+    public void testGetFrequencyHalfWidth() {
         assertEquals(10, WiFiWidth.MHZ_20.getFrequencyWidthHalf());
         assertEquals(20, WiFiWidth.MHZ_40.getFrequencyWidthHalf());
         assertEquals(40, WiFiWidth.MHZ_80.getFrequencyWidthHalf());
